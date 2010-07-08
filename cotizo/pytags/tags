@@ -1,0 +1,43 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ICMP_FILTER	ping.c	67;"	d	line:67	file:
+MAXICMPLEN	ping.c	75;"	d	line:75	file:
+MAXIPLEN	ping.c	74;"	d	line:74	file:
+NROUTES	ping.c	76;"	d	line:76	file:
+TOS_MAX	ping.c	77;"	d	line:77	file:
+broadcast_pings	ping.c	/^static int broadcast_pings = 0;$/;"	v	line:93	file:
+cm	ping.c	/^	struct cmsghdr cm;$/;"	m	line:104	struct:__anon1	typeref:struct:__anon1::cmsghdr	file:
+cmsg	ping.c	/^} cmsg = { {sizeof(struct cmsghdr) + sizeof(struct in_pktinfo), SOL_IP, IP_PKTINFO},$/;"	v	line:106	typeref:struct:__anon1	file:
+cmsg_len	ping.c	/^int cmsg_len;$/;"	v	line:108
+copyright	ping.c	/^char copyright[] =$/;"	v	line:38
+data	ping.c	/^	__u32	data;$/;"	m	line:69	struct:icmp_filter	file:
+device	ping.c	/^char *device;$/;"	v	line:111
+icmp_filter	ping.c	/^struct icmp_filter {$/;"	s	line:68	file:
+icmp_sock	ping.c	/^int icmp_sock;			\/* socket file descriptor *\/$/;"	v	line:89
+in_cksum	ping.c	/^in_cksum(const u_short *addr, register int len, u_short csum)$/;"	f	line:806
+install_filter	ping.c	/^void install_filter(void)$/;"	f	line:1184
+ipi	ping.c	/^	struct in_pktinfo ipi;$/;"	m	line:105	struct:__anon1	typeref:struct:__anon1::in_pktinfo	file:
+main	ping.c	/^main(int argc, char **argv)$/;"	f	line:116
+maxpacket	ping.c	/^int maxpacket = sizeof(outpack);$/;"	v	line:91
+nroute	ping.c	/^static int nroute = 0;$/;"	v	line:81	file:
+optlen	ping.c	/^int optlen = 0;$/;"	v	line:87
+outpack	ping.c	/^u_char outpack[0x10000];$/;"	v	line:90
+parse_reply	ping.c	/^parse_reply(struct msghdr *msg, int cc, void *addr, struct timeval *tv)$/;"	f	line:682
+parsetos	ping.c	/^int parsetos(char *str)$/;"	f	line:1156
+pmtudisc	ping.c	/^int pmtudisc = -1;$/;"	v	line:112
+pr_addr	ping.c	/^pr_addr(__u32 addr)$/;"	f	line:1140
+pr_icmph	ping.c	/^void pr_icmph(__u8 type, __u8 code, __u32 info, struct icmphdr *icp)$/;"	f	line:841
+pr_iph	ping.c	/^void pr_iph(struct iphdr *ip)$/;"	f	line:1114
+pr_options	ping.c	/^void pr_options(unsigned char * cp, int hlen)$/;"	f	line:961
+receive_error_msg	ping.c	/^int receive_error_msg()$/;"	f	line:517
+route	ping.c	/^static __u32 route[10];$/;"	v	line:82	file:
+send_probe	ping.c	/^int send_probe()$/;"	f	line:617
+settos	ping.c	/^int settos = 0;			\/* Set TOS, Precendence or other QOS options *\/$/;"	v	line:88
+source	ping.c	/^struct sockaddr_in source;$/;"	v	line:110	typeref:struct:sockaddr_in
+ts_type	ping.c	/^static int ts_type;$/;"	v	line:80	file:
+usage	ping.c	/^void usage(void)$/;"	f	line:1214
+whereto	ping.c	/^struct sockaddr_in whereto;	\/* who to ping *\/$/;"	v	line:86	typeref:struct:sockaddr_in

@@ -3,8 +3,9 @@
 import sqlite3
 import sys
 import getopt
-import random
-from print_r import print_r
+import myrandom
+import TableRow
+# from print_r import print_r
 
 def usage():
     print """Usage:\t\t\tpython pydb.py [-r|-q]
@@ -39,13 +40,16 @@ def fRandom(db,table,nr):
     print 'fr', db, table, nr # remove me
     sql = sqlite3.connect(db, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     cmd = sql.cursor()
-    cmd.execute('select * from %s' % table)
+    cmd.execute("select * from %s" % table)
     length = len(cmd.description)
     execString = "insert into %s values (?%s)" % (table,",?"*(length-1))
 
+    test = TableRow.TableRow(sql, table)
+
+    return 
+
     for i in xrange(nr):
-        r = [random.random() for z in xrange(length)]
-        cmd.execute(execString, r)
+
     
     
 if __name__=='__main__':
