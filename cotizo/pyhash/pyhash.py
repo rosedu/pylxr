@@ -28,7 +28,7 @@ class App:
         
         self.listbox = Listbox(self.frame)
         self.listbox.pack()
-
+        
         self.root.mainloop()
 
     def run(self):
@@ -39,8 +39,10 @@ class App:
         f = open(filename, "r")
         content = f.read()
 
+        d = {}
         for match in re.findall(pattern, content):
             self.listbox.insert(END, match)
+            d[match] = re.finditer(match, content).begin()
         
         
 def main():
