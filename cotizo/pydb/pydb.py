@@ -1,5 +1,3 @@
-# TODO : rewrite Usage class, raise it as needed 
-
 import sqlite3
 import sys
 import getopt
@@ -7,19 +5,20 @@ import myrandom
 import TableRow
 # from print_r import print_r
 
-def usage():
-    print """Usage:\t\t\tpython pydb.py [-r|-q]
+class Usage(Exception):
+    def __init__(self, msg=None):
+        if msg == None:
+            self.msg ="""Usage:\t\t\tpython pydb.py [-r|-q]
 -q DATABASE QUERY\texecutes a query on DATABASE
 -r DATABASE TAB NR\tinserts NR random entries in table TAB from DATABASE
 
 Note that the two options are mutually exclusive.
-... also note that your usage is OK, but another stupid error raised at runtime [TODO: FIXME :)]
 """
+        else:
+            self.msg = msg
 
 def fQuery(db,query):
-    # could use some error handling here ...
-    # note that in case of error, usage() saves the day :( (and fails)
-    print 'fq', db, query # remove me
+    print '[DEBUG] Query:', db, query
     sql = sqlite3.connect(db)
     cmd = sql.cursor()
     cmd.execute(query)
@@ -28,48 +27,46 @@ def fQuery(db,query):
         print row
     sql.close()
 
-# ROADMAP :
-# * TableRow calss // get the header from the connection and parse it
-# will enable to generate random TYPED(aka with type) values
-# push random rows in database
-# * clean up the try..except in script
-# * implement a main() for simple life
-# * respect the main() guidelines recommended by Razvan's third link
     
 def fRandom(db,table,nr):
-    print 'fr', db, table, nr # remove me
+    print '[DEBUG] Random Insert:', db, table, nr
     sql = sqlite3.connect(db, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     cmd = sql.cursor()
     cmd.execute("select * from %s" % table)
     length = len(cmd.description)
     execString = "insert into %s values (?%s)" % (table,",?"*(length-1))
 
-    test = TableRow.TableRow(sql, table)
+    myrow = TableRow.TableRow(sql, table)
+    manyRows = [myrow.random() for i in xrange(int(nr))]
+    print "Inserting:\n", manyRows
+    cmd.executemany(execString, manyRows)
+        
+    sql.commit()
+    sql.close()
 
-    return 
-
-    for i in xrange(nr):
-
-    
-    
-if __name__=='__main__':
+def main(argv = None):
+    if argv == None:
+        argv = sys.argv[1:]
     try:
-        options, args = getopt.getopt(sys.argv[1:], 'qr')
-        unrecognised = True
+        try: 
+            options, args = getopt.getopt(argv, 'qr')
+        except getopt.error, msg:
+            print msg, "\n"
+            raise Usage()
+        
         for (o,v) in options:
             if o=='-q':
                 query = " ".join(args[1:])
                 fQuery(args[0],query)
-                unrecognised = False
             elif o=='-r':
                 if len(args) < 2:
-                    raise Exception('NotEnoughArguments')
+                    raise Exception('Not enough arguments for -r command (needed 3)')
                 fRandom(args[0], args[1], args[2])
-                unrecognised = False
-        if unrecognised:
-            raise Exception('UnknownOption')
-    except Exception as inst:
-        print inst
-        usage()
-        sys.exit(1)
-   
+    except Exception as err:
+        print err
+        return 1
+    return 0
+    
+
+if __name__=='__main__':
+    sys.exit(main())
