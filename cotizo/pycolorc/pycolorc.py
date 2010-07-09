@@ -62,11 +62,11 @@ def fSpace(scanner, text):
     
 def fTab(scanner, text):
     global output
-    output = output + "&nbsp;"*4
+    output = output + "&nbsp;"*8
 
 def fNewline(scanner, text):
     global output
-    output = output + "<br/>"
+    output = output + "<br/>\n"
 
 def fChar(scanner, text):
     global output
@@ -82,15 +82,35 @@ def fString2(scanner, text):
     global output
     output = output + '"</span>'
 
+def fPreproc1(scanner, text):
+    scanner.begin('preproc')
+    global output
+    output = output + '<span id="keyword">#'
+    
+def fPreproc2(scanner, text):
+    scanner.begin('')
+    global output
+    output = output + '</span><br/>'
+    
 def fAngular1(scanner, text):
-    scanner.begin('angular')
+    scanner.begin('rangular')
     global output
     output = output + '<span id="string">&lt;'
 
 def fAngular2(scanner, text):
-    scanner.begin('')
+    scanner.begin('preproc')
     global output
-    output = output + '&ge;</span>'
+    output = output + '&gt;</span>'
+
+def fString3(scanner, text):
+    scanner.begin('rstring')
+    global output
+    output = output + '<span id="string">"'
+
+def fString4(scanner, text):
+    scanner.begin('preproc')
+    global output
+    output = output + '"</span>'
     
 # Lexicon
 lex = Lexicon([
@@ -110,8 +130,25 @@ lex = Lexicon([
                 (rSpace, fSpace),
                 (AnyChar, fPrint)
                 ]),
-        (Str('<'), fAngular1),
-        State('angular', [
+        (RE("^\w*#"), fPreproc1),
+        State('preproc', [
+                (Str('<'), fAngular1),
+                (Str('"'), fString3),
+                (rPreprocessor, fPrint),
+                (rNewline, fPreproc2),
+                (rTab, fTab),
+                (rNewline, fNewline),
+                (rSpace, fSpace),
+                (AnyChar, fPrint)
+                ]),
+        State('rstring', [
+                (Str('"'), fString4),
+                (rTab, fTab),
+                (rNewline, fNewline),
+                (rSpace, fSpace),
+                (AnyChar, fPrint)
+                ]),
+        State('rangular', [
                 (Str('>'), fAngular2),
                 (rTab, fTab),
                 (rNewline, fNewline),
@@ -125,8 +162,7 @@ lex = Lexicon([
         (rSpace, fPrint),
         (rChar, fChar),
         (rTab, fTab),
-        (rNewline, fNewline),
-        (rPreprocessor, fKeyword)
+        (rNewline, fNewline)
 ])
 
 def main(argv=None):
