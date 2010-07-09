@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+<appSettings>
+<add key="LabelColor" value="Yellow" />
+<add key="MaximumWeight" value="150" />
+<add key="Title" value="Watcher" />
+</appSettings>
+</configuration>
