@@ -10,11 +10,12 @@ def main():
 
     entry = ctags.TagEntry()
     while tagFile.next(entry):
-        print "%s: %s(%s) // %s" % (
+        print "%s: %s(%s) // %s | %s" % (
             entry['name'],
             entry['file'],
             entry['lineNumber'],
-            entry['kind']
+            entry['kind'],
+            entry['pattern']
             )
 
 def searchTags(tagList):
