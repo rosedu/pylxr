@@ -15,30 +15,6 @@ special_chars = ['\n', '\t', '{', '}', '(', ')', '[', ']', '.', ',', ';', '*', \
 operators2 = ['==', '!=' , '<=', '>=', '||', '&&', '+=', '-=', '*=', '/=', '++', \
 		'--', '<<', '>>', '->', '|=', '&=', '^=']
 
-class Data:
-	def __init__(self):
-		self.extern_var = []
-		self.func = []
-		self.local_var = {}
-		self.comment = []
-	
-	def add_extern(self, var):
-		if var not in self.extern_var: # ?? don't think I need this
-			self.extern_var.append(var)
-	def add_func(self, fun):
-		if fun not in self.func:
-			self.func.append(fun)
-			self.local_var.update({fun:[]})
-			
-	def add_local(self, fun, var):
-		self.local_var[fun].append(var)
-
-	def add_comment(self, comment):
-		print 'dsa'
-
-out = None
-data = None
-
 def tokenize(text):
 	global special_chars
 
@@ -101,8 +77,11 @@ def tokenize(text):
 		if text[crt] == '#':
 			crt += 1
 			tok += '#'
-			while text[crt] in [' ', '\t']:
-				crt += 1
+		while text[crt] in [' ', '\t']:
+			crt += 1
+			if crt == l:
+				toks.append(tok) 
+				break
 			while text[crt] not in [' ', '\t', '<', '\"']:
 				tok += text[crt]
 				crt += 1
@@ -120,7 +99,8 @@ def tokenize(text):
 					toks.append(tok)
 				# no need to check here for #include "someting.h"	
 			continue
-
+		if crt == l:
+			break
 		# others
 		while text[crt] not in special_chars and text[crt] not in [' ', '\t']:
 			tok += text[crt]
@@ -129,9 +109,10 @@ def tokenize(text):
 	return toks		
 	
 def color(toks, fname):
-	out.write('<html>\n')
-	out.write('<title> %s </title>\n' % fname)
-	out.write('<body>\n')
+	string = ''
+	string += ('<html>\n')
+	string += ('<title> %s </title>\n' % fname)
+	string += ('<body>\n')
 	it = iter(toks)
 	level = 0
 	crt = 0
@@ -140,44 +121,44 @@ def color(toks, fname):
 		# each line
 		if level != 0:
 			for i in range(level):
-				out.write('&nbsp;')
+				string += ('&nbsp;')
 		if toks[crt] == ' ':
 			crt += 1
 		# prepoc
 		if toks[crt][0] == '#':
-			out.write('<span style=\"color:blue\">')
-			out.write(toks[crt])
+			string += ('<span style=\"color:blue\">')
+			string += (toks[crt])
 			if toks[crt] == '#include':
-				out.write('<span style=\"color:#FA58AC\">')
+				string += ('<span style=\"color:#FA58AC\">')
 				if toks[crt+1][0] == '\"':
-					out.write(' '+toks[crt+1])
+					string += (' '+toks[crt+1])
 				else:
-					out.write(' &lt;'+toks[crt+1][1:])
-				out.write('</span>')
+					string += (' &lt;'+toks[crt+1][1:])
+				string += ('</span>')
 				crt += 2
 			else:
 				crt += 1
 			while toks[crt] != '\n':
 				if toks[crt][0:2] == '/*':
 					elem = toks[crt]
-					out.write('<span style=\"color:green\">')
+					string += ('<span style=\"color:green\">')
 					for char in elem:
 						if char == '\n':
-							out.write('<br />')
+							string += ('<br />')
 						elif char == '\t':
 							for i in range(8):
-								out.write('&nbsp;');
+								string += ('&nbsp;');
 						else:
-							out.write(char)
-					out.write('</span>')
+							string += (char)
+					string += ('</span>')
 				elif  toks[crt][0:2] == '//':
-					out.write('<span style=\"color:green\">')
-					out.write(toks[crt])
-					out.write('</span>')
+					string += ('<span style=\"color:green\">')
+					string += (toks[crt])
+					string += ('</span>')
 				else:
-					out.write(toks[crt])
+					string += (toks[crt])
 				crt += 1
-			out.write('</span><br />\n')
+			string += ('</span><br />\n')
 			crt += 1
 			continue
 			
@@ -185,66 +166,56 @@ def color(toks, fname):
 		while toks[crt] != '\n':
 			if toks[crt][0:2] == '/*':
 				elem = toks[crt]
-				out.write('<span style=\"color:green\">')
+				string += ('<span style=\"color:green\">')
 				for char in elem:
 					if char == '\n':
-						out.write('<br />')
+						string += ('<br />')
 					elif char == '\t':
 							for i in range(8):
-								out.write('&nbsp;');
+								string += ('&nbsp;');
 					else:
-						out.write(char)
-				out.write('</span>')
+						string += (char)
+				string += ('</span>')
 			elif toks[crt][0:2] == '//':
-				out.write('<span style=\"color:green\">')
-				out.write(toks[crt])
-				out.write('</span>')
+				string += ('<span style=\"color:green\">')
+				string += (toks[crt])
+				string += ('</span>')
 			elif toks[crt] in reserved:
-				out.write('<span style=\"color:red\">')
-				out.write(toks[crt])
-				out.write('</span>')
+				string += ('<span style=\"color:red\">')
+				string += (toks[crt])
+				string += ('</span>')
 			elif toks[crt] in types:
-				out.write('<span style=\"color:blue\">')
-				out.write(toks[crt])
-				out.write('</span>')
+				string += ('<span style=\"color:blue\">')
+				string += (toks[crt])
+				string += ('</span>')
 			elif toks[crt][0] == '\"' or toks[crt][0] == '\'' \
 					or toks[crt].isdigit() or toks[crt][0:2] == '0x':
-				out.write('<span style=\"color:#FA58AC\">')
-				out.write(toks[crt])
-				out.write('</span>')
+				string += ('<span style=\"color:#FA58AC\">')
+				string += (toks[crt])
+				string += ('</span>')
 			elif toks[crt] == '\t':
 				for i in range(8):
-					out.write('&nbsp;')
+					string += ('&nbsp;')
 			else:
-				out.write(toks[crt])
+				string += (toks[crt])
 			crt += 1
 			
-		out.write('</span><br />\n')
+		string += ('</span><br />\n')
 		crt += 1
-	out.write('</body>\n</html>\n')
-	out.close()
+	string += ('</body>\n</html>\n')
+	return string
 		
 	
-def main():
-	global out
-	global tokens
+def main(fname):
 
-	if len(sys.argv) != 2:
-		print "Usage: python p5.py <C_source_file>"
-		sys.exit(1)
-	lines = []
 	# try read file
-	try:
-		f = open(sys.argv[1])
-		text = f.read();
-		f.close()
-		out = open(sys.argv[1]+'.html', 'w')
-	except :
-		print "File error"
-		sys.exit(1)
-	tokens = tokenize(text)
-	color(tokens, sys.argv[1])
+	f = open(fname, 'r')
+	text = f.read();
+	f.close()
 
+	tokens = tokenize(text)
+	return color(tokens, fname)
+	
 if __name__ == '__main__':
-	main()
+	main(fname)
 

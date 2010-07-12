@@ -355,7 +355,6 @@ struct sockaddr_in *from;
 	gettimeofday( &tv, &tz );
 
 	ip = (struct ip *) buf;
-
 	hlen = ip->ip_hl << 2;
 	if (cc < hlen + ICMP_MINLEN) {
 		if (pingflags & VERBOSE)

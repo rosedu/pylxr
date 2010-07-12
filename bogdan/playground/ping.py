@@ -20,7 +20,7 @@ if len(sys.argv) == 2:
 else:
 	stat = tagFile.first(entry)
 	while stat:
-		print entry['name'], entry['file'], entry['lineNumber']
+		print entry['name'], entry['file'], entry['lineNumber'], entry['kind']
 		stat = tagFile.next(entry)
 
 
