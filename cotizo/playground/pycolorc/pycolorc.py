@@ -1,3 +1,5 @@
+"""Lexer stuff"""
+
 import sys
 import ConfigParser
 import CLexer

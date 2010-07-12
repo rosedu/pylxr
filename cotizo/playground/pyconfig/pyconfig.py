@@ -1,3 +1,5 @@
+""" Configuration Parser """
+
 import ConfigParser
 import sys
 
