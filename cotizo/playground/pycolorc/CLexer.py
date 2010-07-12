@@ -3,12 +3,12 @@ from plex.traditional import re as RE
 
 class CLexer:
     
-    def __init__(self, filename):
+    def __init__(self, ffilename):
         self.rKeyword = Str("auto") | Str("break") | Str("case") |\
             Str("char") | Str("const") | Str("continue") | Str("default") |\
             Str("do") | Str("double") | Str("else") | Str("enum") |\
             Str("extern") | Str("float") | Str("for") | Str("goto") |\
-            Str("if") | Str("int") | Str("long") | Str("register") |\
+            Str("if") | Str("int") | Str("long") | Str("NULL") | Str("register") |\
             Str("return") | Str("short") | Str("signed") | Str("sizeof") |\
             Str("static") | Str("struct") | Str("switch") | Str("typedef") |\
             Str("union") | Str("unsigned") | Str("void") | Str("volatile") |\
@@ -25,6 +25,7 @@ class CLexer:
         self.rNewline = RE("(\n)")
         
         self.output = ""
+        self.linenumber = 1
         
 
         lex = Lexicon([
@@ -80,8 +81,8 @@ class CLexer:
 
         self.output = """<html><head><link rel=stylesheet href="style.css" type=
 "text/css"></head><body>"""
-        f = open(filename, "r")
-        scanner = Scanner(lex, f, filename)
+        f = open(ffilename, "r")
+        scanner = Scanner(lex, f, ffilename)
         while True:
             token = scanner.read()
             if token[0] is None:
@@ -123,7 +124,8 @@ class CLexer:
         self.output = self.output + "&nbsp;"*8
 
     def fNewline(self, scanner, text):
-        self.output = self.output + "<br/>\n"
+        self.linenumber = self.linenumber + 1
+        self.output = self.output + "<br/>"
 
     def fChar(self, scanner, text):
         
