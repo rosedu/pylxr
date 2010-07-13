@@ -1,9 +1,9 @@
 import sys
 import os
-import ConfigParser
-import ctags 
+import ConfigParser 
 from ctags import CTags, TagEntry
 import sqlite3
+from stat import *
 
 def usage():
 	print 'Usage: pyhon makedb <conf.ini>'
@@ -27,8 +27,8 @@ def tagDB(cursor, tagFile):
 	stat = tagFile.first(entry)
 	while stat:
 		command = 'INSERT INTO Tags ' + \
-			'( name, file, lineNumber, kind) values ' + \
-			'( \'%s\', \'%s\', \'%i\', \'%s\')' % \
+			'(name, file, lineNumber, kind) values ' + \
+			'(\'%s\', \'%s\', \'%i\', \'%s\')' % \
 			( entry['name'], entry['file'], \
 			entry['lineNumber'], entry['kind'])
 		try:
@@ -44,17 +44,38 @@ def fileDB(cursor, srcpath):
 
 	# may need more columns
 	command = 'CREATE TABLE Files (' + \
-			'name TEXT NOT NULL, size INTEGER NOT NULL)'
+			'name TEXT NOT NULL, size INTEGER NOT NULL, ' + \
+			'mtime INTEGER NOT NULL)'
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
 		print 'Error: ', msg
 		print "Command: ", command
-	walk(os.path.join(srcpath),cursor)
+	walk(os.path.join(srcpath), '.', cursor)
 
-def walk(path, cursor):
-	for f in  os.listdir(path):
-		print f
+def walk(top, path, cursor):
+	dirpath = os.path.join(top, path)
+	for f in  os.listdir(dirpath):
+		abspath = os.path.join(dirpath, f)
+		fstat  = os.stat(abspath)
+		mode = fstat[ST_MODE]
+		if path != '.':
+			relpath = os.path.join(path, f)
+		else:
+			relpath = f
+		if S_ISDIR(mode):
+			walk(top, relpath, cursor)
+		elif S_ISREG(mode):
+			command = 'INSERT INTO Files (name, size, mtime) ' + \
+				'values (\'%s\', %i, %i) ' % \
+				(relpath, fstat.st_size, fstat.st_mtime)
+			try:
+				cursor.execute(command)
+			except sqlite3.Error, msg:
+				print 'Error: ', msg
+				print "Command: ", command
+				
+			
 
 def main(conf):
 	
