@@ -5,6 +5,7 @@ from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
 
+
 def usage():
 	print 'Usage: pyhon makedb <conf.ini>'
 
@@ -52,6 +53,7 @@ def fileDB(cursor, srcpath):
 		print 'Error: ', msg
 		print "Command: ", command
 	walk(os.path.join(srcpath), '.', cursor)
+
 
 def walk(top, path, cursor):
 	dirpath = os.path.join(top, path)
