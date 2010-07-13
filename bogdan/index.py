@@ -41,6 +41,7 @@ def link(fname):
 	s  = '<html> <body>' 
 
 	for tok in toks:
+		entry = []
 		try:
 			entry = usedb.search(db, tok)
 		except sqlite3.Error,msg:
