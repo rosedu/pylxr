@@ -4,6 +4,7 @@ import ConfigParser
 from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
+import subprocess
 
 
 def usage():
@@ -112,14 +113,17 @@ def main(conf):
 	srcpath = os.path.join(rootpath, srcpath)
 	dbpath = os.path.join(rootpath, dbpath)
 	
+	# I think it should be done like this :-?
 	try:
-		os.popen('cd %s; ctags --fields=nK -R -f %s' % \
-			(srcpath, os.path.abspath(os.path.join( \
-		 	os.path.dirname(__file__),  'tags'))))
-	except:
-		print 'ctags run error'
-		return 1
-	
+		command = 'ctags --fields=nK -R -f %s' % \
+			os.path.abspath(os.path.join( \
+		 	os.path.dirname(__file__), 'tags'))
+		prog = subprocess.Popen(command.split(), cwd = srcpath)
+		prog.wait()
+	except (KeyboardInterrupt, SystemExit):
+		prog.terminate()
+
+	# open tag file
 	try:
 		tagFile = CTags('tags')
 	except:
