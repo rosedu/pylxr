@@ -15,7 +15,8 @@ def do_dir(path):
 	page = "<html><body>"
 
 	fullpath = os.path.join(os.path.dirname(__file__), path)
-	content = pydir.listDir(fullpath)
+	directory = pydir.database(os.path.join(os.dirname"./pylxr.db", "tree")
+	content = directory.listDir(fullpath)
 	# Fancy some sorting? :)
 	content.sort(key = lambda (x,y,a): (y,x))
 	if content == None:
