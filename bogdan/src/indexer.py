@@ -47,7 +47,7 @@ def fileDB(cursor, srcpath):
 	# may need more columns
 	command = 'CREATE TABLE Files (' + \
 			'name TEXT NOT NULL, size INTEGER NOT NULL, ' + \
-			'mtime INTEGER NOT NULL)'
+			'mtime INTEGER NOT NULL, type TEXT NOT)'
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
@@ -93,66 +93,49 @@ def main(conf):
 		return 1
 		
 	# parsing paths
-	dbpath = '.'
-	srcpath = '.'
-	rootpath = ''
 	for s in parser.sections():
-		if s == 'out_db':
-			for o in parser.items(s):
-				if o[0] == 'path':
-					dbpath = o[1]
-		if s == 'src_dir':
-			for o in parser.items(s):
-				if o[0] == 'path':
-					srcpath = o[1]
-		if s == 'root':
-			for o in parser.items(s):
-				if o[0] == 'path':
-					rootpath = o[1]
-					 
-	srcpath = os.path.join(rootpath, srcpath)
-	dbpath = os.path.join(rootpath, dbpath)
+		for o in parser.items(s):
+			if o[0] == 'src-dir':
+				srcpath = o[1]
+			if o[0] == 'db-file':
+				dbpath = o[1]
+		# I think it should be done like this :-?
+		try:
+			command = 'ctags --fields=nK -R -f %s' % \
+				os.path.abspath(os.path.join( \
+			 	os.path.dirname(__file__), 'tags'))
+			prog = subprocess.Popen(command.split(), cwd = srcpath)
+			prog.wait()
+		except (KeyboardInterrupt, SystemExit):
+			prog.terminate()
+
+		# open tag file
+		try:
+			tagFile = CTags('tags')
+		except:
+			print 'Error on open tags'
+			return 1
+
+
+		# open database
+		try:
+			db = sqlite3.connect(dbpath)
+			cursor = db.cursor()
+		except sqlite3.Error, msg:
+			print dbpath
+			print msg
+			return 1
+
+		tagDB(cursor, tagFile)
+		fileDB(cursor, srcpath)
 	
-	# I think it should be done like this :-?
-	try:
-		command = 'ctags --fields=nK -R -f %s' % \
-			os.path.abspath(os.path.join( \
-		 	os.path.dirname(__file__), 'tags'))
-		prog = subprocess.Popen(command.split(), cwd = srcpath)
-		prog.wait()
-	except (KeyboardInterrupt, SystemExit):
-		prog.terminate()
-
-	# open tag file
-	try:
-		tagFile = CTags('tags')
-	except:
-		print 'Error on open tags'
-		return 1
-
-
-	# open database
-	try:
-		db = sqlite3.connect(dbpath)
-		cursor = db.cursor()
-	except sqlite3.Error, msg:
-		print dbpath
-		print msg
-		return 1
-
-	tagDB(cursor, tagFile)
-	fileDB(cursor, srcpath)
+		db.commit()
+		cursor.close()
 	
-	db.commit()
-	cursor.close()
-	
-	#remove tags file
-	os.remove(os.path.abspath(os.path.join( \
-		 os.path.dirname(__file__),  'tags')))
+		#remove tags file
+		os.remove(os.path.abspath(os.path.join( \
+			 os.path.dirname(__file__),  'tags')))
 	
 	
 if __name__ == '__main__':
-	if len(sys.argv) != 2:
-		usage()
-		sys.exit(1)
-	sys.exit(main(sys.argv[1]))
+	sys.exit(main('../pylxr.ini'))
