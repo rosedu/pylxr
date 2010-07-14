@@ -20,14 +20,14 @@ class DBSearch:
 			
 	# return (size, mtime)
 	def searchFile(self, fname):
-		command = 'SELECT size, mtime FROM Files ' + \
-			'WHERE name=\'%s\'' % fname
+		command = 'SELECT * FROM Files ' + \
+			'WHERE name LIKE \'%s\'' % fname
 		self.cursor.execute(command)
 		select = self.cursor.fetchall()
 		if len(select) == 0:
 			return	None
 		else:
-			return select[0]
+			return select
 		
 	def close(self):
 		self.cursor.close()
