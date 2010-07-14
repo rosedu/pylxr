@@ -1,18 +1,19 @@
 from plex import *
 from plex.traditional import re as RE
+import sys
+import os
 
 class CLexer:
-    
-    def __init__(self, ffilename):
+    def __init__(self, ffilename, dbfile):
         self.rKeyword = Str("auto") | Str("break") | Str("case") |\
-            Str("char") | Str("const") | Str("continue") | Str("default") |\
+            Str("char") | Str("const") | Str("continue") | Str("default")|\
             Str("do") | Str("double") | Str("else") | Str("enum") |\
             Str("extern") | Str("float") | Str("for") | Str("goto") |\
-            Str("if") | Str("int") | Str("long") | Str("NULL") | Str("register") |\
-            Str("return") | Str("short") | Str("signed") | Str("sizeof") |\
-            Str("static") | Str("struct") | Str("switch") | Str("typedef") |\
-            Str("union") | Str("unsigned") | Str("void") | Str("volatile") |\
-            Str("while")
+            Str("if") | Str("int") | Str("long") | Str("NULL") |\
+            Str("register") | Str("return") | Str("short") |\
+            Str("signed") | Str("sizeof") | Str("static") | Str("struct")|\
+            Str("switch") | Str("typedef") | Str("union") |\
+            Str("unsigned") | Str("void") | Str("volatile") | Str("while")
         self.rLetter = Range("AZaz")
         self.rDigit = Range("09")
         self.rDecimal = Rep1(Range("09"))
@@ -24,9 +25,8 @@ class CLexer:
         self.rTab = RE("(\t)")
         self.rNewline = RE("(\n)")
         
-        self.output = ""
+        self.__output = ""
         self.linenumber = 1
-        
 
         lex = Lexicon([
                 (Str("/*"), self.fComment1),
@@ -79,7 +79,14 @@ class CLexer:
                 (self.rNewline, self.fNewline)
                 ])
 
-        self.output = """<html><head><link rel=stylesheet href="style.css" type=
+        ipath = os.path.join(os.path.dirname(__file__), "../dbaccess/")
+        sys.path.append(ipath)
+        self.DB = __import__("dbsearch").DBSearch(dbfile)
+
+        self.create_output(lex, ffilename)
+
+    def create_output(self, lex, ffilename):
+        self.__output = """<html><head><link rel=stylesheet href="style.css" type=
 "text/css"></head><body>"""
         f = open(ffilename, "r")
         scanner = Scanner(lex, f, ffilename)
@@ -87,79 +94,84 @@ class CLexer:
             token = scanner.read()
             if token[0] is None:
                 break
-        self.output = self.output + "</body></html>"
+        self.__output = self.__output + "</body></html>"
 
     def __str__(self):
-        return self.output
+        return self.__output
         
     def fComment1(self, scanner, text):
         scanner.begin('comment')
-        self.output = self.output + '<span id="comment">/*'
+        self.__output = self.__output + '<span id="comment">/*'
             
     def fComment2(self, scanner, text):
-        self.output = self.output + '*/</span>'
+        self.__output = self.__output + '*/</span>'
         scanner.begin('')
                 
     def fKeyword(self, scanner, text):
-        self.output = self.output + "".join([
+        self.__output = self.__output + "".join([
                 '<span id="keyword">',
                 text,
                 '</span>'
                 ])
 
     def fIdentifier(self, scanner, text):
-        self.output = self.output + "".join([
-                '<a href="">',
-                text,
-                '</a>'
-                ])
+        tag = self.DB.searchTag(text)
+        if tag is None:
+            self.__output = self.__output + text
+        else:
+            (f,l,k) = tag
+            self.__output = self.__output + "".join([
+                    '<a href="?f=/%s#%s">' % (f,l),
+                    text,
+                    '</a>'
+                    ])
 
     def fPrint(self, scanner, text):
-        self.output = self.output + text
+        self.__output = self.__output + text
         
     def fSpace(self, scanner, text):
-        self.output = self.output + "&nbsp;"
+        self.__output = self.__output + "&nbsp;"
         
     def fTab(self, scanner, text):
-        self.output = self.output + "&nbsp;"*8
+        self.__output = self.__output + "&nbsp;"*8
 
     def fNewline(self, scanner, text):
         self.linenumber = self.linenumber + 1
-        self.output = self.output + "<br/>"
+        self.__output = self.__output + "<br/>"
 
     def fChar(self, scanner, text):
         
-        self.output = self.output + '<span id="string">' + text + '</span>'
+        self.__output = self.__output + '<span id="string">' + text + '</span>'
 
     def fString1(self, scanner, text):
         scanner.begin('string')
-        self.output = self.output + '<span id="string">"'
+        self.__output = self.__output + '<span id="string">"'
 
     def fString2(self, scanner, text):
         scanner.begin('')
-        self.output = self.output + '"</span>'
+        self.__output = self.__output + '"</span>'
 
     def fPreproc1(self, scanner, text):
         scanner.begin('preproc')
-        self.output = self.output + '<span id="keyword">#'
+        self.__output = self.__output + '<span id="keyword">#'
         
     def fPreproc2(self, scanner, text):
         scanner.begin('')
-        self.output = self.output + '</span><br/>'
+        self.__output = self.__output + '</span><br/>'
     
     def fAngular1(self, scanner, text):
         scanner.begin('rangular')
-        self.output = self.output + '<span id="string">&lt;'
+        self.__output = self.__output + '<span id="string">&lt;'
 
     def fAngular2(self, scanner, text):
         scanner.begin('preproc')
-        self.output = self.output + '&gt;</span>'
+        self.__output = self.__output + '&gt;</span>'
         
     def fString3(self, scanner, text):
         scanner.begin('rstring')
-        self.output = self.output + '<span id="string">"'
+        self.__output = self.__output + '<span id="string">"'
         
     def fString4(self, scanner, text):
         scanner.begin('preproc')
-        self.output = self.output + '"</span>'
+        self.__output = self.__output + '"</span>'
             

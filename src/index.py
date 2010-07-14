@@ -14,7 +14,7 @@ def do_dir(config, path):
 	DB = dbsearch.DBSearch(db_filename)
 	content = DB.searchFile(path+"%")
 
-	if content == None:
+	if content is None:
 		page = page + '<p style="color:red"> Forbidden? Or unavailable? Or even inexistent... IDK!</p>'
 	else:
 		content.sort(key = lambda (x,y,z,t): (t,x))
@@ -39,11 +39,11 @@ def do_dir(config, path):
 
 def do_file(config, path):
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
-	pycolorc = apache.import_module('pycolorc', path=[directory])
+	CLexer = apache.import_module('CLexer', path=[directory])
 
 	fullpath = os.path.join(config.get('pylxr', 'src-dir'), path[1:])
-	ret = pycolorc.main([fullpath]) # TODO: oh btw, wth ?!? passing VECTOR ?!? fixme, please! :(
-	return ret
+	lexer = CLexer.CLexer(fullpath, config.get('pylxr', 'db-file'))
+	return str(lexer)
 
 def parse_config(filename='pylxr.ini'):
 	config = ConfigParser.ConfigParser()
@@ -57,7 +57,7 @@ def index(req):
 	uri = req.unparsed_uri
 	regexp = re.compile("(d=(?P<dir>.+))|(f=(?P<file>.+))")
 	options = regexp.search(uri)
-	if options == None:
+	if options is None:
 		return do_dir(config, "")
 	if options.group('dir') is not None:
 		return do_dir(config, options.group('dir'))
