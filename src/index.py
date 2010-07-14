@@ -39,9 +39,6 @@ def do_dir(path):
 	return page
 
 def do_file(path):
-	# TODO: move module from playground to PyLxrLib, make it more esthetically pleasent [spelling :-/]
-	# some sort of verification for the lexer? wth, pycolorc should cope with it...
-	
 	directory = os.path.join(os.path.dirname(__file__), "playground/pycolorc")
 	pycolorc = apache.import_module('pycolorc', path=[directory])
 
