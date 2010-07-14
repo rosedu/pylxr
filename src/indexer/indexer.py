@@ -6,8 +6,10 @@ from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
 import subprocess
+import indexSearch
 
 
+''' print usage'''
 def usage():
 	print 'Usage:'
 	print '\tpython indexer.py'
@@ -15,7 +17,7 @@ def usage():
 	print '\tpython indexer.py -c <conf.ini>'	
 
 
-# create table with tags
+''' create table with tags'''
 def tagDB(cursor, tagFile):
 	entry = TagEntry()
 
@@ -45,7 +47,7 @@ def tagDB(cursor, tagFile):
 		stat = tagFile.next(entry)
 	
 
-# create table with files	
+''' create table with files and search tokens'''	
 def fileDB(cursor, srcpath):
 
 	# may need more columns
@@ -56,7 +58,18 @@ def fileDB(cursor, srcpath):
 		cursor.execute(command)
 	except sqlite3.Error, msg:
 		print 'Error: ', msg
-		print "Command: ", command 
+		print "Command: ", command
+		
+	command = 'CREATE TABLE Search (' + \
+			'tag TEXT NOT NULL, file TEXT NOT NULL' + \
+			'lineNumber INTEGER NOT NULL)'
+	
+	try:
+		cursor.execute(command)
+	except sqlite3.Error, msg:
+		print 'Error: ', msg
+		print "Command: ", command		
+	
 	walk(os.path.join(srcpath), '.', cursor)
 
 
@@ -91,6 +104,8 @@ def walk(top, path, cursor):
 			except sqlite3.Error, msg:
 				print 'Error: ', msg
 				print "Command: ", command
+				
+			indexSearch.indexFile(relpath, cursor)
 				
 			
 
@@ -167,6 +182,5 @@ if __name__ == '__main__':
 				sys.exit(1)
 			sys.exit(main(a))
 	if len(sys.argv) == 1:
-		print 'defaut'
 		sys.exit(main('../pylxr.ini'))
 
