@@ -1,5 +1,6 @@
 from plex import *
 import os
+import sqlite3
 
 ''' lexicon definition -> work in progress '''
 
@@ -14,18 +15,20 @@ space = Any(' \t\n')
 
 lex = Lexicon( [ \
 	(preproc | comment1, IGNORE), \
-	(Str('/*'), Begin('comment')), 
-	State('comment' , [ \
+	(Str('/*'), Begin('comment2')), 
+	State('comment2' , [ \
 		(Str('*/'), Begin('')),
 		(AnyChar, IGNORE) \
 	]), \
 	(Str('\"'), Begin('dquote')), 
 	State('dquote' , [ \
+		(Str('\\\"'), IGNORE), \
 		(Str('\"'), Begin('')),
 		(AnyChar, IGNORE) \
 	]), \
-	(Str('\''), Begin('quote')), 
+	(Str('\''), Begin('quote')), \
 	State('quote' , [ \
+		(Str('\\\''), IGNORE), \
 		(Str('\''), Begin('')),
 		(AnyChar, IGNORE) \
 	]), \
@@ -40,7 +43,7 @@ def getScanner(self, fname):
 
 
 def indexFile(top, fname, cursor):
-	''' generete enties in table Search for tokens '''
+	''' generate entries in table Search for tokens '''
 	
 	sc = getScanner(lex, os.path.join(top, fname))
 

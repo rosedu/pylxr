@@ -9,20 +9,21 @@ import subprocess
 import indexSearch
 
 
-''' print usage'''
 def usage():
+	''' print usage'''
+
 	print 'Usage:'
 	print '\tpython indexer.py'
 	print 'or'
 	print '\tpython indexer.py -c <conf.ini>'	
 
-
-''' create table with tags'''
 def tagDB(cursor, tagFile):
+	''' create table with tags'''
+
 	entry = TagEntry()
 
 	# create tagls table
-	command = 'CREATE TABLE Tags (' + \
+	command = 'CREATE TABLE IF NOT EXISTS Tags (' + \
 				'name TEXT NOT NULL, file TEXT NOT NULL, ' + \
 				'lineNumber INTEGER NOT NULL, kind TEXT NOT NULL)'
 	try : 
@@ -47,11 +48,12 @@ def tagDB(cursor, tagFile):
 		stat = tagFile.next(entry)
 	
 
-''' create table with files and search tokens'''	
+	
 def fileDB(cursor, srcpath):
-
+	''' create table with files and search tokens'''
+	
 	# may need more columns
-	command = 'CREATE TABLE Files (' + \
+	command = 'CREATE TABLE IF NOT EXISTS Files (' + \
 			'name TEXT NOT NULL, size INTEGER, ' + \
 			'mtime INTEGER, type TEXT NOT NULL)'
 	try:
@@ -60,20 +62,22 @@ def fileDB(cursor, srcpath):
 		print 'Error: ', msg
 		print "Command: ", command
 		
-	command = 'CREATE TABLE Search (' + \
+	command = 'CREATE TABLE IF NOT EXISTS Search (' + \
 			'tag TEXT NOT NULL, file TEXT NOT NULL,' + \
-			'lineNumber INTEGER NOT NULL)'
+			'lineNumber INTEGER NOT NULL)' 
 	
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
 		print 'Error: ', msg
-		print "Command: ", command		
+		print "Command: ", command
 	
 	walk(os.path.join(srcpath), '.', cursor)
 
 
 def walk(top, path, cursor):
+	''' recursive folder walk'''
+	
 	dirpath = os.path.join(top, path)
 	
 	if path != '.':
