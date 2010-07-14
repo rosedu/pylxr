@@ -17,7 +17,7 @@ def usage():
 	print '\tpython indexer.py -c <conf.ini>'	
 
 
-''' create table with tags''''
+''' create table with tags'''
 def tagDB(cursor, tagFile):
 	entry = TagEntry()
 
