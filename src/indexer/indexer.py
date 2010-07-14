@@ -46,8 +46,8 @@ def fileDB(cursor, srcpath):
 
 	# may need more columns
 	command = 'CREATE TABLE Files (' + \
-			'name TEXT NOT NULL, size INTEGER NOT NULL, ' + \
-			'mtime INTEGER NOT NULL, type TEXT NOT)'
+			'name TEXT NOT NULL, size INTEGER, ' + \
+			'mtime INTEGER, type TEXT NOT NULL)'
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
@@ -58,6 +58,15 @@ def fileDB(cursor, srcpath):
 
 def walk(top, path, cursor):
 	dirpath = os.path.join(top, path)
+	
+	command = 'INSERT INTO Files (name, size, mtime, type) ' + \
+			'values (\'%s\', NULL, NULL, \'dir\') ' % dirpath
+	try:
+		cursor.execute(command)
+	except sqlite3.Error, msg:
+		print 'Error: ', msg
+		print "Command: ", command
+	
 	for f in  os.listdir(dirpath):
 		abspath = os.path.join(dirpath, f)
 		fstat  = os.stat(abspath)
@@ -69,8 +78,8 @@ def walk(top, path, cursor):
 		if S_ISDIR(mode):
 			walk(top, relpath, cursor)
 		elif S_ISREG(mode):
-			command = 'INSERT INTO Files (name, size, mtime) ' + \
-				'values (\'%s\', %i, %i) ' % \
+			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
+				'values (\'%s\', %i, %i, \'reg\') ' % \
 				(relpath, fstat.st_size, fstat.st_mtime)
 			try:
 				cursor.execute(command)
