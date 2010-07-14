@@ -26,7 +26,7 @@ class CLexer:
         self.rNewline = RE("(\n)")
         
         self.__output = ""
-        self.linenumber = 1
+        self.linenumbers = 1
 
         lex = Lexicon([
                 (Str("/*"), self.fComment1),
@@ -86,15 +86,19 @@ class CLexer:
         self.create_output(lex, ffilename)
 
     def create_output(self, lex, ffilename):
-        self.__output = """<html><head><link rel=stylesheet href="style.css" type=
-"text/css"></head><body>"""
         f = open(ffilename, "r")
         scanner = Scanner(lex, f, ffilename)
         while True:
             token = scanner.read()
             if token[0] is None:
                 break
-        self.__output = self.__output + "</body></html>"
+
+        self.__output = ('<html><head><link rel=stylesheet href="style.css" type="text/css"></head><body><table><tr valign="top"><td rowspan=%s>' % self.linenumbers) + self.__output + "</td><td>"
+        for i in xrange(1,self.linenumbers):
+            self.__output = self.__output + '<a name="%s" href="#%s">%s<br/>\n' % (i,i, i)
+        self.__output = self.__output + """
+</td></tr></table>
+</body></html>"""
 
     def __str__(self):
         return self.__output
@@ -136,7 +140,7 @@ class CLexer:
         self.__output = self.__output + "&nbsp;"*8
 
     def fNewline(self, scanner, text):
-        self.linenumber = self.linenumber + 1
+        self.linenumbers = self.linenumbers + 1
         self.__output = self.__output + "<br/>"
 
     def fChar(self, scanner, text):
