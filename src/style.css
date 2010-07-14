@@ -1,0 +1,14 @@
+body {
+font: "Courier New";
+}
+#keyword {
+color: green;
+font-weight:bold;
+}
+#string {
+color:red;
+}
+#comment {
+color:grey;
+font-decoration:italic;
+}
