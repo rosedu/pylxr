@@ -52,7 +52,7 @@ def fileDB(cursor, srcpath):
 		cursor.execute(command)
 	except sqlite3.Error, msg:
 		print 'Error: ', msg
-		print "Command: ", command
+		print "Command: ", command 
 	walk(os.path.join(srcpath), '.', cursor)
 
 
