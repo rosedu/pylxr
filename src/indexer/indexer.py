@@ -61,7 +61,7 @@ def fileDB(cursor, srcpath):
 		print "Command: ", command
 		
 	command = 'CREATE TABLE Search (' + \
-			'tag TEXT NOT NULL, file TEXT NOT NULL' + \
+			'tag TEXT NOT NULL, file TEXT NOT NULL,' + \
 			'lineNumber INTEGER NOT NULL)'
 	
 	try:
@@ -105,7 +105,7 @@ def walk(top, path, cursor):
 				print 'Error: ', msg
 				print "Command: ", command
 				
-			indexSearch.indexFile(relpath, cursor)
+			indexSearch.indexFile(top, relpath, cursor)
 				
 			
 
@@ -141,7 +141,8 @@ def main(conf):
 
 		# open tag file
 		try:
-			tagFile = CTags('tags')
+			tagFile = CTags(os.path.abspath(os.path.join( \
+					 os.path.dirname(__file__),  'tags')))
 		except:
 			print 'Error on open tags'
 			return 1
@@ -183,4 +184,5 @@ if __name__ == '__main__':
 			sys.exit(main(a))
 	if len(sys.argv) == 1:
 		sys.exit(main('../pylxr.ini'))
+	print usage()
 
