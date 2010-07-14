@@ -59,13 +59,14 @@ def fileDB(cursor, srcpath):
 def walk(top, path, cursor):
 	dirpath = os.path.join(top, path)
 	
-	command = 'INSERT INTO Files (name, size, mtime, type) ' + \
-			'values (\'%s\', NULL, NULL, \'dir\') ' % dirpath
-	try:
-		cursor.execute(command)
-	except sqlite3.Error, msg:
-		print 'Error: ', msg
-		print "Command: ", command
+	if path != '.':
+		command = 'INSERT INTO Files (name, size, mtime, type) ' + \
+				'values (\'%s\', NULL, NULL, \'dir\') ' % dirpath
+		try:
+			cursor.execute(command)
+		except sqlite3.Error, msg:
+			print 'Error: ', msg
+			print "Command: ", command
 	
 	for f in  os.listdir(dirpath):
 		abspath = os.path.join(dirpath, f)
