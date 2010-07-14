@@ -1,6 +1,7 @@
 import sys
 import os
 import ConfigParser 
+import getopt
 from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
@@ -8,7 +9,10 @@ import subprocess
 
 
 def usage():
-	print 'Usage: pyhon makedb <conf.ini>'
+	print 'Usage:'
+	print '\tpython indexer.py'
+	print 'or'
+	print '\tpython indexer.py -c <conf.ini>'	
 
 
 # create table with tags
@@ -102,13 +106,14 @@ def main(conf):
 		print msg
 		return 1
 		
-	# parsing paths
+	# parsing ini file
 	for s in parser.sections():
 		for o in parser.items(s):
 			if o[0] == 'src-dir':
 				srcpath = o[1]
 			if o[0] == 'db-file':
 				dbpath = o[1]
+		
 		# I think it should be done like this :-?
 		try:
 			command = 'ctags --fields=nK -R -f %s' % \
@@ -148,4 +153,20 @@ def main(conf):
 	
 	
 if __name__ == '__main__':
-	sys.exit(main('../pylxr.ini'))
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], 'c:')
+	except getopt.GetoptError, msg:
+		print msg
+		usage()
+		sys.exit()
+	for o, a in opts:
+		if o == '-c':
+			if len(args) != 0:
+				print 'Too many arguments'
+				usage()
+				sys.exit(1)
+			sys.exit(main(a))
+	if len(sys.argv) == 1:
+		print 'defaut'
+		sys.exit(main('../pylxr.ini'))
+
