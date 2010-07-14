@@ -21,7 +21,7 @@ class DBSearch:
 	# return (size, mtime)
 	def searchFile(self, fname):
 		command = 'SELECT * FROM Files ' + \
-			'WHERE name LIKE \'%s\'' % fname
+			'WHERE name LIKE "%s"' % fname
 		self.cursor.execute(command)
 		select = self.cursor.fetchall()
 		if len(select) == 0:

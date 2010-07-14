@@ -61,7 +61,7 @@ def walk(top, path, cursor):
 	
 	if path != '.':
 		command = 'INSERT INTO Files (name, size, mtime, type) ' + \
-				'values (\'%s\', NULL, NULL, \'dir\') ' % dirpath
+				'values (\'%s\', NULL, NULL, \'dir\') ' % ("/" + path)
 		try:
 			cursor.execute(command)
 		except sqlite3.Error, msg:
@@ -81,7 +81,7 @@ def walk(top, path, cursor):
 		elif S_ISREG(mode):
 			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', %i, %i, \'reg\') ' % \
-				(relpath, fstat.st_size, fstat.st_mtime)
+				("/"+relpath, fstat.st_size, fstat.st_mtime)
 			try:
 				cursor.execute(command)
 			except sqlite3.Error, msg:
