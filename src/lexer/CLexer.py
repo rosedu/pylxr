@@ -24,59 +24,76 @@ class CLexer:
         self.rSpace = RE("( )")
         self.rTab = RE("(\t)")
         self.rNewline = RE("(\n)")
+        
         self.__filename = ffilename
-        self.__output = ""
-        self.linenumbers = 1
+        self.__lines = []
+        self.__tmpLine = None
+        self.__tmpElem = None
+        self.__state = ''
 
         lex = Lexicon([
-                (Str("/*"), self.fComment1),
+                # Comments
+                (Str("/*"), self.fStartComment),
                 State('comment', [
-                        (Str("*/"), self.fComment2),
+                        (Str("*/"), self.fEndComment),
                         (self.rTab, self.fTab),
                         (self.rNewline, self.fNewline),
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
-                (Str('"'), self.fString1),
+                # Strings
+                (Str('"'), self.fStartString),
                 State('string', [
-                        (Str('"'), self.fString2),
+                        (Str('"'), self.fEndString),
                         (self.rTab, self.fTab),
                         (self.rNewline, self.fNewline),
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
-                (RE("^\w*#"), self.fPreproc1),
+                # Include directives
+                (RE("^\w*#(include)"), self.fStartInclude),
+                State('include', [
+                        (Str('<'), self.fStartAngularReference),
+                        (Str('"'), self.fStartStringReference),
+                        (self.rNewline, self.fEndInclude),
+                        (self.rTab, self.fTab),
+                        (self.rSpace, self.fSpace),
+                        (AnyChar, self.fPrint)
+                        ]),
+                # Other preprocessor directives
+                (RE("^\w*#"), self.fStartPreprocessor),
                 State('preproc', [
-                        (Str('<'), self.fAngular1),
-                        (Str('"'), self.fString3),
-                        (self.rNewline, self.fPreproc2),
+                        (self.rNewline, self.fEndPreprocessor),
                         (self.rTab, self.fTab),
-                        (self.rNewline, self.fNewline),
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
+                # String reference
                 State('rstring', [
-                        (Str('"'), self.fString4),
+                        (Str('"'), self.fEndStringReference),
                         (self.rTab, self.fTab),
                         (self.rNewline, self.fNewline),
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
+                # Angular reference
                 State('rangular', [
-                        (Str('>'), self.fAngular2),
+                        (Str('>'), self.fEndAngularReference),
                         (self.rTab, self.fTab),
                         (self.rNewline, self.fNewline),
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
+                # Other stuff
                 (self.rKeyword, self.fKeyword),
                 (self.rIdentifier, self.fIdentifier),
-                (self.rShit, self.fPrint),
+                #(self.rShit, self.fPrint),
                 (self.rDecimal, self.fPrint),
                 (self.rSpace, self.fPrint),
                 (self.rChar, self.fChar),
                 (self.rTab, self.fTab),
-                (self.rNewline, self.fNewline)
+                (self.rNewline, self.fNewline),
+                (AnyChar, self.fPrint)
                 ])
 
         ipath = os.path.join(os.path.dirname(__file__), "../dbaccess/")
@@ -92,90 +109,193 @@ class CLexer:
             token = scanner.read()
             if token[0] is None:
                 break
-
-        self.__output = ('<html><head><link rel=stylesheet href="style.css" type="text/css"></head><body><table><tr valign="top"><td rowspan=%s>' % self.linenumbers) + self.__output + "</td><td>"
-        for i in xrange(1,self.linenumbers):
-            self.__output = self.__output + '<a name="%s" href="#%s">%s<br/>\n' % (i,i, i)
-        self.__output = self.__output + """
-</td></tr></table>
-</body></html>"""
-
-    def __str__(self):
-        return self.__output
-        
-    def fComment1(self, scanner, text):
-        scanner.begin('comment')
-        self.__output = self.__output + '<span id="comment">/*'
             
-    def fComment2(self, scanner, text):
-        self.__output = self.__output + '*/</span>'
-        scanner.begin('')
-                
-    def fKeyword(self, scanner, text):
-        self.__output = self.__output + "".join([
-                '<span id="keyword">',
-                text,
-                '</span>'
-                ])
+        if self.__tmpLine is not None:
+            self.__lines.append(self.__tmpLine)
 
+    def get(self):
+        return self.__lines
+
+    # HANDLERS  
+    def fKeyword(self, scanner, text):
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append( ('keyword', text) )
+
+        self.__tmpElem = None
+
+        
     def fIdentifier(self, scanner, text):
         tag = self.DB.searchTag(text,self.__filename)
+#        tag = self.DB.searchTag(text)
+        r = {'disp': text}
         if tag is None:
-            self.__output = self.__output + text
+            r['link'] = None
         else:
             (f,l,k) = tag
-            self.__output = self.__output + "".join([
-                    '<a href="?r=/%s#%s">' % (f,l),
-                    text,
-                    '</a>'
-                    ])
+            r['link'] = "?r=/%s#%s" % (f,l)
+
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append( ('identifier', r) )
+
+        self.__tmpElem = None
+
 
     def fPrint(self, scanner, text):
-        self.__output = self.__output + text
+        if self.__tmpElem is None:
+            self.__tmpElem = ('print', '')
+        (a,b) = self.__tmpElem
+        self.__tmpElem  = (a, b+text)
+
         
     def fSpace(self, scanner, text):
-        self.__output = self.__output + "&nbsp;"
+        c = "&nbsp;" # Space char
+
+        if self.__tmpElem is None:
+            self.__tmpElem = ('print', '')
+        (a,b) = self.__tmpElem
+        self.__tmpElem  = (a, b+c)
+
         
     def fTab(self, scanner, text):
-        self.__output = self.__output + "&nbsp;"*8
+        c = "&nbsp;" * 8 # Tab char
 
+        if self.__tmpElem is None:
+            self.__tmpElem = ('print', '')
+        (a,b) = self.__tmpElem
+        self.__tmpElem  = (a, b+c)
+
+        
     def fNewline(self, scanner, text):
-        self.linenumbers = self.linenumbers + 1
-        self.__output = self.__output + "<br/>"
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
+        self.__lines.append(self.__tmpLine)
+        self.__tmpLine = None
+        
+
 
     def fChar(self, scanner, text):
-        
-        self.__output = self.__output + '<span id="string">' + text + '</span>'
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append( ('char', text) )
 
-    def fString1(self, scanner, text):
+        self.__tmpElem = None
+
+        
+    def fStartComment(self, scanner, text):
+        scanner.begin('comment')
+        self.__state = 'comment'
+        self.__tmpElem = ('comment', '/*')
+        
+            
+    def fEndComment(self, scanner, text):
+        scanner.begin('')
+        self.__state = ''
+        (a,b) = self.__tmpElem
+        self.__tmpElem = (a, b+'*/')
+
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
+
+
+        
+    def fStartString(self, scanner, text):
         scanner.begin('string')
-        self.__output = self.__output + '<span id="string">"'
+        self.__state = 'string'
+        self.__tmpElem = ('string', '"')
 
-    def fString2(self, scanner, text):
+
+    def fEndString(self, scanner, text):
         scanner.begin('')
-        self.__output = self.__output + '"</span>'
-
-    def fPreproc1(self, scanner, text):
-        scanner.begin('preproc')
-        self.__output = self.__output + '<span id="keyword">#'
+        self.__state = ''
+        (a,b) = self.__tmpElem
+        self.__tmpElem = (a, b+'"')
         
-    def fPreproc2(self, scanner, text):
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
+
+
+    def fStartPreprocessor(self, scanner, text):
+        scanner.begin('preproc')
+        self.__state = 'preproc'
+        self.__tmpElem = ('preprocessor', text)
+        
+    def fEndPreprocessor(self, scanner, text):
         scanner.begin('')
-        self.__output = self.__output + '</span><br/>'
+        self.__state = ''
+        (a,b) = self.__tmpElem
+        self.__tmpElem = (a, b)
+        
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
+        
+        self.__lines.append(self.__tmpLine)
+        self.__tmpLine = None
+
+        
+    def fStartInclude(self, scanner, text):
+        scanner.begin('include')
+        self.__state = 'include'
+        self.__tmpElem = ('preprocessor', text)
+        
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        
+    def fEndInclude(self, scanner, text):
+        scanner.begin('')
+        self.__state = ''
+
+        self.__lines.append(self.__tmpLine)
+        self.__tmpLine = None
+        self.__tmpElem = None        
+
     
-    def fAngular1(self, scanner, text):
+    def fStartAngularReference(self, scanner, text):
         scanner.begin('rangular')
-        self.__output = self.__output + '<span id="string">&lt;'
+        self.__state = 'rangular'
+        self.__tmpElem = ('string', '&lt;')
 
-    def fAngular2(self, scanner, text):
-        scanner.begin('preproc')
-        self.__output = self.__output + '&gt;</span>'
+
+    def fEndAngularReference(self, scanner, text):
+        scanner.begin('include')
+        self.__state = 'include'
+        (a,b) = self.__tmpElem
+        self.__tmpElem = (a, b+'&gt')
         
-    def fString3(self, scanner, text):
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
+
+        
+    def fStartStringReference(self, scanner, text):
         scanner.begin('rstring')
-        self.__output = self.__output + '<span id="string">"'
+        self.__state = 'rstring'
+        self.__tmpElem = ('string', '"')
+
         
-    def fString4(self, scanner, text):
-        scanner.begin('preproc')
-        self.__output = self.__output + '"</span>'
+    def fEndStringReference(self, scanner, text):
+        scanner.begin('include')
+        self.__state = 'include'
+        (a,b) = self.__tmpElem
+        self.__tmpElem = (a, b+'"')
+        
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
+
             

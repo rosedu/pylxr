@@ -4,7 +4,8 @@
 	<!-- Link to some stylesheet ? :( -->
   </head>
   <body>
-	<table><%
+	<table>
+	  <tr><th>File</th><th>Size</th><th>Date</th></tr><%
 for h in listing:
 	type = h['type']
 	if type == 'dir' or type == 'reg':

@@ -45,7 +45,7 @@ def do_dir(req, config, path):
 			})
 	
 
-def do_file(config, path):
+def do_file(req, config, path):
 	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
 	
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
@@ -53,7 +53,13 @@ def do_file(config, path):
 
 	fullpath = os.path.join(config.get('pylxr', 'src-dir'), path[1:])
 	lexer = CLexer.CLexer(fullpath, config.get('pylxr', 'db-file'))
-	return str(lexer)
+
+	req.content_type = 'html'
+	tmpl = psp.PSP(req, filename='templates/source.tmpl')
+	tmpl.run( vars = {
+			'filename': path,
+			'lines':lexer.get()
+			})
 
 def parse_config(filename='pylxr.ini'):
 	""" Just get the config file and pass it around... """
@@ -75,4 +81,4 @@ def index(req):
 		return do_dir(req, config, "")
 	if options.group('dir') is not None:
 		return do_dir(req, config, options.group('dir'))
-	return do_file(config, options.group('file'))
+	return do_file(req, config, options.group('file'))
