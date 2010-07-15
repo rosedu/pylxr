@@ -9,9 +9,6 @@ import subprocess
 import xapian
 import indexXapian
 
-# Commenting indexSearch out for the time being.
-# import indexSearch
-
 
 def usage():
 	''' print usage'''
@@ -20,6 +17,7 @@ def usage():
 	print '\tpython indexer.py'
 	print 'or'
 	print '\tpython indexer.py -c <conf.ini>'	
+
 
 def tagDB(cursor, tagFile):
 	''' create table with tags'''
@@ -53,7 +51,7 @@ def tagDB(cursor, tagFile):
 	
 
 	
-def fileDB(cursor, srcpath, dbpath):
+def fileDB(cursor, srcpath, xpath):
 	''' create table with files and search tokens'''
 	
 	# may need more columns
@@ -77,10 +75,8 @@ def fileDB(cursor, srcpath, dbpath):
 		print "Command: ", command
 	
 	# create xapian databse
-	# need to resolve dbpath somehow
-	dbpath = os.path.join(os.path.dirname(dbpath), 'xapiandb')
 	try:
-		xdb = xapian.WritableDatabase(dbpath, xapian.DB_CREATE_OR_OPEN)	
+		xdb = xapian.WritableDatabase(xpath, xapian.DB_CREATE_OR_OPEN)	
 	except xapian.Error, msg:
 		print 'Error opening xapian database'
 		print msg
@@ -124,10 +120,7 @@ def walk(top, path, cursor, xdb, indexer):
 				print 'Error: ', msg
 				print "Command: ", command
 			
-			
 			indexXapian.indexFile(top, relpath, xdb, indexer)
-			#indexSearch.indexFile(top, relpath, cursor)
-				
 			
 
 def main(conf):
@@ -142,6 +135,9 @@ def main(conf):
 		print msg
 		return 1
 		
+	srcpath = 'src'
+	dbapth = 'newdb'
+	xpath = 'xdb' 
 	# parsing ini file
 	for s in parser.sections():
 		for o in parser.items(s):
@@ -149,10 +145,10 @@ def main(conf):
 				srcpath = o[1]
 			if o[0] == 'db-file':
 				dbpath = o[1]
+			if o[0] == 'xapian-dir':
+				xpath = o[1]
 		
-		# I think it should be done like this :-?
-		# [Edit Cotizo]: Yep, that's the way
-		# Maybe jailing it to a chroot-ed directory, but I think it's too much.
+		
 		try:
 			command = 'ctags --fields=nK -R -f %s' % \
 				os.path.abspath(os.path.join( \
@@ -181,7 +177,7 @@ def main(conf):
 			return 1
 
 		tagDB(cursor, tagFile)
-		fileDB(cursor, srcpath, dbpath)
+		fileDB(cursor, srcpath, xpath)
 	
 		db.commit()
 		cursor.close()
