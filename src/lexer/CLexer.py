@@ -129,6 +129,7 @@ class CLexer:
         if self.__tmpLine is None:
             self.__tmpLine = []
         if self.__tmpElem is not None:
+            raise Exception('test')
             self.__tmpLine.append(self.__tmpElem)
         self.__tmpLine.append( ('keyword', text) )
 
