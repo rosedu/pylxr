@@ -8,7 +8,7 @@ class DBSearch:
 		self.db = sqlite3.connect(dbpath)
 		self.cursor = self.db.cursor()
 	
-	def searchTag(self, tag):
+	def searchTag(self, tag, fname):
 		'''
 		Use for tag search
 		++ (file, lineNumber, kind)
@@ -21,8 +21,12 @@ class DBSearch:
 		if len(select) == 0:
 			return None
 		else:
+			for (f, lineNumber, kind) in select:
+				if f.encode() == fname:
+					return (f.encode(), lineNumber, kind.encode()) 
 			return (select[0][0].encode(), select[0][1], \
 				select[0][2].encode())
+
 			
 	def searchFile(self, fname):
 		'''
