@@ -103,20 +103,16 @@ class CLexer:
         self.create_output(lex, ffilename)
 
     def create_output(self, lex, ffilename):
-        try:
-            f = open(ffilename, "r")
-            scanner = Scanner(lex, f, ffilename)
-            while True:
-                token = scanner.read()
-                if token[0] is None:
-                    break
+        f = open(ffilename, "r")
+        scanner = Scanner(lex, f, ffilename)
+        while True:
+            token = scanner.read()
+            if token[0] is None:
+                break
+            
+            if self.__tmpLine is not None:
+                self.__lines.append(self.__tmpLine)
                 
-                if self.__tmpLine is not None:
-                    self.__lines.append(self.__tmpLine)
-        except Exception as ex:
-            s = str(scanner.position())
-            raise Exception(s + '\n\n' + str(ex))
-
     def get(self):
         return self.__lines
 
