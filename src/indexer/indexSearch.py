@@ -1,6 +1,9 @@
-from plex import *
+import sys
 import os
 import sqlite3
+from plex import *
+
+
 
 ''' lexicon definition -> work in progress '''
 
@@ -57,7 +60,12 @@ def indexFile(top, fname, cursor):
 	tags = map(lambda x : x[0].encode(), cursor.fetchall())
 	
 	while True:
-		tok = sc.read()
+		try:
+			tok = sc.read()
+		except:
+			print 'Error on tokenizing file %s' % fname
+			sys.exit(1)
+			
 		if tok[0] is None:
 			break
 		if tok[0] in tags:
