@@ -193,6 +193,13 @@ class CLexer:
 
         
     def fStartComment(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('comment')
         self.__state = 'comment'
         self.__tmpElem = ('comment', '/*')
@@ -212,6 +219,13 @@ class CLexer:
 
         
     def fStartString(self, scanner, text):
+                if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('string')
         self.__state = 'string'
         self.__tmpElem = ('string', '"')
@@ -230,6 +244,13 @@ class CLexer:
 
 
     def fStartPreprocessor(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('preproc')
         self.__state = 'preproc'
         self.__tmpElem = ('preprocessor', text)
@@ -250,6 +271,13 @@ class CLexer:
 
         
     def fStartInclude(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('include')
         self.__state = 'include'
         self.__tmpElem = ('preprocessor', text)
@@ -268,6 +296,13 @@ class CLexer:
 
     
     def fStartAngularReference(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('rangular')
         self.__state = 'rangular'
         self.__tmpElem = ('string', '&lt;')
@@ -286,6 +321,13 @@ class CLexer:
 
         
     def fStartStringReference(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a, '')
+            
         scanner.begin('rstring')
         self.__state = 'rstring'
         self.__tmpElem = ('string', '"')

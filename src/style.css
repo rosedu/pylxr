@@ -1,14 +1,18 @@
 body {
-font-family: "Courier New";
+	font-family: "Courier New";
 }
 #keyword {
-color: green;
-font-weight:bold;
+	color: green;
+	font-weight:bold;
 }
 #string {
-color:red;
+	color:red;
 }
 #comment {
-color:grey;
-font-decoration:italic;
+	color:grey;
+	font-decoration:italic;
+}
+#preprocessor {
+	color:blue;
+	font-weight:bold;
 }
