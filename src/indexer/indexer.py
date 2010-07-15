@@ -6,6 +6,9 @@ from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
 import subprocess
+import xapian
+import indexXapian
+
 # Commenting indexSearch out for the time being.
 # import indexSearch
 
@@ -50,7 +53,7 @@ def tagDB(cursor, tagFile):
 	
 
 	
-def fileDB(cursor, srcpath):
+def fileDB(cursor, srcpath, dbpath):
 	''' create table with files and search tokens'''
 	
 	# may need more columns
@@ -73,10 +76,21 @@ def fileDB(cursor, srcpath):
 		print 'Error: ', msg
 		print "Command: ", command
 	
-	walk(os.path.join(srcpath), '.', cursor)
+	# create xapian databse
+	# need to resolve dbpath somehow
+	dbpath = os.path.join(os.path.dirname(dbpath), 'xapiandb')
+	try:
+		xdb = xapian.WritableDatabase(dbpath, xapian.DB_CREATE_OR_OPEN)	
+	except xapian.Error, msg:
+		print 'Error opening xapian database'
+		print msg
+		sys.exit(1)	
+	indexer = xapian.TermGenerator()
+
+	walk(os.path.join(srcpath), '.', cursor, xdb, indexer)
 
 
-def walk(top, path, cursor):
+def walk(top, path, cursor, xdb, indexer):
 	''' recursive folder walk'''
 	
 	dirpath = os.path.join(top, path)
@@ -99,7 +113,7 @@ def walk(top, path, cursor):
 		else:
 			relpath = f
 		if S_ISDIR(mode):
-			walk(top, relpath, cursor)
+			walk(top, relpath, cursor, xdb, indexer)
 		elif S_ISREG(mode):
 			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', %i, %i, \'reg\') ' % \
@@ -109,8 +123,10 @@ def walk(top, path, cursor):
 			except sqlite3.Error, msg:
 				print 'Error: ', msg
 				print "Command: ", command
-				
-			indexSearch.indexFile(top, relpath, cursor)
+			
+			
+			indexXapian.indexFile(top, relpath, xdb, indexer)
+			#indexSearch.indexFile(top, relpath, cursor)
 				
 			
 
@@ -165,7 +181,7 @@ def main(conf):
 			return 1
 
 		tagDB(cursor, tagFile)
-		fileDB(cursor, srcpath)
+		fileDB(cursor, srcpath, dbpath)
 	
 		db.commit()
 		cursor.close()
