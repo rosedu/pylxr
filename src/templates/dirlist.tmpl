@@ -1,0 +1,46 @@
+<html>
+  <head>
+	<title>Directory listing for <%= dirpath %></title>
+	<!-- Link to some stylesheet ? :( -->
+  </head>
+  <body>
+	<table><%
+for h in listing:
+	type = h['type']
+	if type == 'dir' or type == 'reg':
+		directive = type[0]
+		link = h['link']
+		display = h['display']
+		if type=='reg':
+			size = h['size']
+			date = h['date']
+		else:
+			size = ''
+			date = ''
+	%><tr><td><a href="?<%= directive %>=<%= link %>"><%= display %></a></td><td><%= size %></td><td><%= date %></td></tr>
+<%
+	else:
+		display = h['display']
+	%><tr><td><%= display %></td><td></td><td></td></td>
+<%
+%>
+	</table><%
+if DEBUG is not None:
+	# Persist	
+%>
+	<span id="debug"><p>Debug messages:</p>
+		<p>
+			<ul>
+<%
+	for d in DEBUG:
+		# Persist
+		%>
+				<li><%= d %></li>
+<%
+		%>
+			</ul>
+		</p>
+	</span><%
+%>
+  </body>
+</html>

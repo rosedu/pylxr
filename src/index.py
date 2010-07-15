@@ -1,43 +1,53 @@
-from mod_python import apache
+""" Main index file. Will handle most of the requests. """
+
+from mod_python import apache, psp
 import os
 import re
 import ConfigParser
 import pickle
+from datetime import datetime
 
-def do_dir(config, path):
+def do_dir(req, config, path):
+	""" Does the stuff needed for a directory (when we have a "?d=..." GET directive). """
+	
 	import_dir = os.path.join(os.path.dirname(__file__), "dbaccess")
 	dbsearch = apache.import_module('dbsearch', path=[import_dir])
-	page = "<html><body>"
-
 
 	db_filename = config.get("pylxr", "db-file")
 	DB = dbsearch.DBSearch(db_filename)
 	content = DB.searchFile(path+"%")
 
+	DEBUG = None
+	listing = []
 	if content is None:
-		page = page + '<p style="color:red"> Forbidden? Or unavailable? Or even inexistent... IDK!</p>'
+		DEBUG = ['Forbidden? Or unavailable? Or even inexistent... IDK!']
 	else:
 		content.sort(key = lambda (x,y,z,t): (t,x))
-		page = page + "<table>"
+		listing = []
 		for (f, s, d, t) in content:
-			page = page + "<tr>"
 			father = re.search("^(.*)/",f).group(0)[:-1]
 			if path != father:
 				continue
 			e = re.search("[\w.\s]*\w$", f).group(0) # somehow, it works ?!?
 			if t == 'dir':
-				page = page + "<td><a href='?d=%s'>%s/</a></td><td></td><td></td>" % (f,e)
+				listing.append( {'type':'dir', 'link':f, 'display':e} )
 			elif t=='reg':
-				page = page + "<td><a href='?f=%s'>%s</a></td><td>%s</td><td>%s</td>" % (f,e, s, d)
+				listing.append( {'type':'reg', 'link':f, 'display':e, 'size':s, 'date':datetime.fromtimestamp(d)} )
 			else:
-				page = page + "<td>%s</td><td></td><td></td>" % e
-			page = page + "</tr>"
-		page = page + "</table>"
+				listing.append( {'type':'n/a', 'display':e} )
+
+	req.content_type = 'html'
+	tmpl = psp.PSP(req, filename='templates/dirlist.tmpl')
+	tmpl.run( vars={
+			'DEBUG': DEBUG,
+			'listing': listing,
+			'dirpath': path
+			})
 	
-	page = page + "</body></html>"
-	return page
 
 def do_file(config, path):
+	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
+	
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
 	CLexer = apache.import_module('CLexer', path=[directory])
 
@@ -46,19 +56,23 @@ def do_file(config, path):
 	return str(lexer)
 
 def parse_config(filename='pylxr.ini'):
+	""" Just get the config file and pass it around... """
+	
 	config = ConfigParser.ConfigParser()
 	fullpath = os.path.join(os.path.dirname(__file__), filename)
 	config.read(fullpath)
 	return config
 
 def index(req):
+	""" Main entrypoint. """
+	
 	config = parse_config()
 					   
 	uri = req.unparsed_uri
-	regexp = re.compile("(d=(?P<dir>.+))|(f=(?P<file>.+))")
+	regexp = re.compile("(d=(?P<dir>.+))|(r=(?P<file>.+))")
 	options = regexp.search(uri)
 	if options is None:
-		return do_dir(config, "")
+		return do_dir(req, config, "")
 	if options.group('dir') is not None:
-		return do_dir(config, options.group('dir'))
+		return do_dir(req, config, options.group('dir'))
 	return do_file(config, options.group('file'))

@@ -6,7 +6,8 @@ from ctags import CTags, TagEntry
 import sqlite3
 from stat import *
 import subprocess
-import indexSearch
+# Commenting indexSearch out for the time being.
+# import indexSearch
 
 
 def usage():
@@ -134,6 +135,8 @@ def main(conf):
 				dbpath = o[1]
 		
 		# I think it should be done like this :-?
+		# [Edit Cotizo]: Yep, that's the way
+		# Maybe jailing it to a chroot-ed directory, but I think it's too much.
 		try:
 			command = 'ctags --fields=nK -R -f %s' % \
 				os.path.abspath(os.path.join( \

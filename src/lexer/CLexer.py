@@ -125,7 +125,7 @@ class CLexer:
         else:
             (f,l,k) = tag
             self.__output = self.__output + "".join([
-                    '<a href="?f=/%s#%s">' % (f,l),
+                    '<a href="?r=/%s#%s">' % (f,l),
                     text,
                     '</a>'
                     ])
