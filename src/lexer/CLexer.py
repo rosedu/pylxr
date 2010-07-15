@@ -155,8 +155,6 @@ class CLexer:
 
 
     def fPrint(self, scanner, text):
-        if text==' ':
-            text = '&nbsp;'
         if self.__tmpElem is None:
             self.__tmpElem = ('print', '')
         (a,b) = self.__tmpElem
