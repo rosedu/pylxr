@@ -181,8 +181,6 @@ class CLexer:
             
         self.__lines.append(self.__tmpLine)
         self.__tmpLine = None
-        self.__tmpElem = None
-        
 
 
     def fChar(self, scanner, text):
