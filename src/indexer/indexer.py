@@ -111,6 +111,7 @@ def walk(top, path, cursor, xdb, indexer):
 		if S_ISDIR(mode):
 			walk(top, relpath, cursor, xdb, indexer)
 		elif S_ISREG(mode):
+			print 'Indexing file %s' % relpath
 			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', %i, %i, \'reg\') ' % \
 				("/"+relpath, fstat.st_size, fstat.st_mtime)
@@ -140,15 +141,17 @@ def main(conf):
 	xpath = 'xdb' 
 	# parsing ini file
 	for s in parser.sections():
+		print 'Started indexing project %s' % s
 		for o in parser.items(s):
 			if o[0] == 'src-dir':
 				srcpath = o[1]
-			if o[0] == 'db-file':
+			elif o[0] == 'db-file':
 				dbpath = o[1]
-			if o[0] == 'xapian-dir':
+			elif o[0] == 'xapian-dir':
 				xpath = o[1]
 		
 		
+		print 'Generating tag file'
 		try:
 			command = 'ctags --fields=nK -R -f %s' % \
 				os.path.abspath(os.path.join( \
@@ -176,7 +179,9 @@ def main(conf):
 			print msg
 			return 1
 
+		print 'Inserting tags into database'
 		tagDB(cursor, tagFile)
+		print 'Indexing files'
 		fileDB(cursor, srcpath, xpath)
 	
 		db.commit()
@@ -185,7 +190,9 @@ def main(conf):
 		#remove tags file
 		os.remove(os.path.abspath(os.path.join( \
 			 os.path.dirname(__file__),  'tags')))
-	
+		
+		print 'Finished indexing project %s\n' % s
+		
 	
 if __name__ == '__main__':
 	try:
