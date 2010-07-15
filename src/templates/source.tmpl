@@ -1,0 +1,54 @@
+<html>
+  <head>
+	<title>Source code for file <%= filename %></title>
+	<link rel="stylesheet" href="/style.css" type="text/css">
+  </head>
+  <body>
+	<table><%
+i = 0
+for line in lines:
+    i = i+1
+%><tr><td><a name="<%= i %>" href="#<%= i %>"><%= i %></a><td>
+<%
+    if line is None:
+%></td></tr>
+<%
+        continue
+    for (typ, con) in line:
+        # Okay, should have a map, but it's easier this way.
+        if typ=='comment':
+            %><span id="comment"><%= con %></span>
+            <%
+        elif typ=='keyword':
+            %><span id="keyword"><%= con %></span>
+            <%
+        elif typ=='identifier':
+            if con['link'] is not None:
+                %><a href="<%= con['link'] %>"><%= con['disp'] %></a>
+                <%
+            else:
+                %><%= con['disp'] %>
+                <%
+        elif typ=='string':
+            %><span id="string"><%= con %></span>
+            <%
+        elif typ=='print':
+            %><%=  con %>
+            <%
+        elif typ=='preprocessor':
+            %><span id="preproc"><%= con %></span>
+            <%
+        elif typ=='include':
+            %><span id="preproc"><%= con %></span>
+            <%
+        elif typ=='char':
+            %><span id="string"><%= con %></span>
+            <%
+        else:
+            %><%= "^^^" + typ + " ^^^ " + con + "^^^" %><%
+%></td></tr><%
+
+%>
+	</table>
+  </body>
+</html>
