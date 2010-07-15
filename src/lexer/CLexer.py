@@ -41,6 +41,12 @@ class CLexer:
                         (self.rSpace, self.fSpace),
                         (AnyChar, self.fPrint)
                         ]),
+                # One-line comment
+                (Str("//"), self.fStartOneLineComment),
+                State('olcomment', [
+                        (self.rNewline, self.fEndOneLineComment),
+                        (AnyChar, self.fPrint)
+                        ]),
                 # Strings
                 (Str('"'), self.fStartString),
                 State('string', [
@@ -63,6 +69,8 @@ class CLexer:
                 # Other preprocessor directives
                 (RE("^\w*#"), self.fStartPreprocessor),
                 State('preproc', [
+                        (Str('<'), self.fStartAngularReference),
+                        (Str('"'), self.fStartStringReference),
                         (self.rNewline, self.fEndPreprocessor),
                         (self.rTab, self.fTab),
                         (self.rSpace, self.fSpace),
@@ -190,6 +198,21 @@ class CLexer:
 
         self.__tmpElem = None
 
+    def fStartOneLineComment(self, scanner, text):
+        scanner.begin('olcomment')
+        self.__state = 'olcomment'
+        self.__tmpElem = ('comment', '//')
+
+    def fEndOneLineComment(self, scanner, text):
+        scanner.begin('')
+        self.__state = ''
+        
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        self.__tmpLine.append(self.__tmpElem)
+        self.__lines.append(self.__tmpLine)
+        self.__tmpLine = None
+        self.__tmpElem = None
         
     def fStartComment(self, scanner, text):
         if self.__tmpElem is not None:
@@ -200,8 +223,7 @@ class CLexer:
         scanner.begin('comment')
         self.__state = 'comment'
         self.__tmpElem = ('comment', '/*')
-        
-            
+
     def fEndComment(self, scanner, text):
         scanner.begin('')
         self.__state = ''
@@ -273,11 +295,12 @@ class CLexer:
             
         scanner.begin('include')
         self.__state = 'include'
-        self.__tmpElem = ('preprocessor', text)
+        self.__tmpElem = ('include', text)
         
         if self.__tmpLine is None:
             self.__tmpLine = []
         self.__tmpLine.append(self.__tmpElem)
+        self.__tmpElem = None
         
     def fEndInclude(self, scanner, text):
         scanner.begin('')
