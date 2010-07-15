@@ -120,6 +120,8 @@ class CLexer:
     def fKeyword(self, scanner, text):
         if self.__tmpLine is None:
             self.__tmpLine = []
+        if self.__tmpElem is not None:
+            self.__tmpLine.append(self.__tmpElem)
         self.__tmpLine.append( ('keyword', text) )
 
         self.__tmpElem = None
@@ -137,6 +139,8 @@ class CLexer:
 
         if self.__tmpLine is None:
             self.__tmpLine = []
+        if self.__tmpElem is not None:
+            self.__tmpLine.append(self.__tmpElem)
         self.__tmpLine.append( ('identifier', r) )
 
         self.__tmpElem = None
