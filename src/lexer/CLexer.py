@@ -57,7 +57,7 @@ class CLexer:
                         (AnyChar, self.fPrint)
                         ]),
                 # Include directives
-                (RE("^\w*#(include)"), self.fStartInclude),
+                (RE("^\w*#include"), self.fStartInclude),
                 State('include', [
                         (Str('<'), self.fStartAngularReference),
                         (Str('"'), self.fStartStringReference),
