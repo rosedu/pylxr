@@ -97,7 +97,7 @@ class CLexer:
                 (self.rIdentifier, self.fIdentifier),
                 #(self.rShit, self.fPrint),
                 (self.rDecimal, self.fPrint),
-                (self.rSpace, self.fPrint),
+                (self.rSpace, self.fSpace),
                 (self.rChar, self.fChar),
                 (self.rTab, self.fTab),
                 (self.rNewline, self.fNewline),
