@@ -103,15 +103,19 @@ class CLexer:
         self.create_output(lex, ffilename)
 
     def create_output(self, lex, ffilename):
-        f = open(ffilename, "r")
-        scanner = Scanner(lex, f, ffilename)
-        while True:
-            token = scanner.read()
-            if token[0] is None:
-                break
-            
-        if self.__tmpLine is not None:
-            self.__lines.append(self.__tmpLine)
+        try:
+            f = open(ffilename, "r")
+            scanner = Scanner(lex, f, ffilename)
+            while True:
+                token = scanner.read()
+                if token[0] is None:
+                    break
+                
+                if self.__tmpLine is not None:
+                    self.__lines.append(self.__tmpLine)
+        except Exception as ex:
+            s = str(scanner.position())
+            raise Exception(s + '\n\n' + str(ex))
 
     def get(self):
         return self.__lines
@@ -181,6 +185,7 @@ class CLexer:
             
         self.__lines.append(self.__tmpLine)
         self.__tmpLine = None
+        self.__tmpElem = None
         
 
 
@@ -197,8 +202,6 @@ class CLexer:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('comment')
         self.__state = 'comment'
@@ -208,8 +211,10 @@ class CLexer:
     def fEndComment(self, scanner, text):
         scanner.begin('')
         self.__state = ''
-        (a,b) = self.__tmpElem
-        self.__tmpElem = (a, b+'*/')
+        b = ''
+        if self.__tmpElem is not None:
+            (a,b) = self.__tmpElem
+        self.__tmpElem = ('comment', b+'*/')
 
         if self.__tmpLine is None:
             self.__tmpLine = []
@@ -219,12 +224,10 @@ class CLexer:
 
         
     def fStartString(self, scanner, text):
-                if self.__tmpElem is not None:
+        if self.__tmpElem is not None:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('string')
         self.__state = 'string'
@@ -248,8 +251,6 @@ class CLexer:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('preproc')
         self.__state = 'preproc'
@@ -275,8 +276,6 @@ class CLexer:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('include')
         self.__state = 'include'
@@ -300,8 +299,6 @@ class CLexer:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('rangular')
         self.__state = 'rangular'
@@ -325,8 +322,6 @@ class CLexer:
             if self.__tmpLine is None:
                 self.__tmpLine = []
             self.__tmpLine.append(self.__tmpElem)
-            (a,b) = self.__tmpElem
-            self.__tmpElem = (a, '')
             
         scanner.begin('rstring')
         self.__state = 'rstring'
