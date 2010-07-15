@@ -24,7 +24,7 @@ class CLexer:
         self.rSpace = RE("( )")
         self.rTab = RE("(\t)")
         self.rNewline = RE("(\n)")
-        
+        self.__filename = ffilename
         self.__output = ""
         self.linenumbers = 1
 
@@ -119,7 +119,7 @@ class CLexer:
                 ])
 
     def fIdentifier(self, scanner, text):
-        tag = self.DB.searchTag(text)
+        tag = self.DB.searchTag(text,self.__filename)
         if tag is None:
             self.__output = self.__output + text
         else:
