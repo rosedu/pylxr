@@ -13,7 +13,9 @@ import indexXapian
 
 
 # will add more
-langmap = { 'c':['.c','.h'] }
+langmap = { 'c':['.c','.h'], \
+			'c++':['.c++','.cc','.cp','.cpp','.cxx','.h','.h++', \
+					'.hh','.hp','.hpp','.hxx','.C','.H'] }
 
 
 def usage():
@@ -125,6 +127,8 @@ def walk(top, path, cursor, xdb, indexer, lang):
 				indexXapian.indexFile(top, relpath, xdb, indexer)
 
 def indexAll(srcpath, dbpath, xpath, lang):
+	''' main indexer function'''
+
 	print 'Generating tag file'
 	try:
 		command = 'ctags --fields=nK -R -f %s' % \
@@ -166,6 +170,13 @@ def indexAll(srcpath, dbpath, xpath, lang):
 	os.remove(os.path.abspath(os.path.join( \
 		 os.path.dirname(__file__),  'tags')))
 
+def validateLang(lang):
+	global langmap
+	try:
+		ext = langmap[lang]
+		return True
+	except KeyError:
+		return False
 
 
 def main(conf):
@@ -196,7 +207,9 @@ def main(conf):
 				xpath = o[1]
 			elif o[0] == 'language':
 				lang = o[1].lower()
-	#			if val
+				if validateLang(lang) == False:
+					print 'Language %s is not implemented, will index in default mode' % lang
+					lang = None
 		
 		indexAll(srcpath, dbpath, xpath, lang)
 		print 'Finished indexing project %s\n' % s
