@@ -5,7 +5,9 @@ import os
 import re
 import ConfigParser
 import pickle
+import subprocess
 from datetime import datetime
+import urllib
 
 def do_dir(req, config, path):
 	""" Does the stuff needed for a directory (when we have a "?d=..." GET directive). """
@@ -81,15 +83,20 @@ def search(req):
 		
 		directory = os.path.join(os.path.dirname(__file__), "dbaccess/")
 		dbsearch = apache.import_module('dbsearch', path=[directory])
-		xapian = apache.import_module('xapianSearch', path=[directory])
+		# xapian = apache.import_module('xapianSearch', path=[directory])
 		DBS = dbsearch.DBSearch(dbfile)
 
 		allTags = DBS.searchTag(search, '', allMatches=True)
 		if allTags is not None:
-			allTags.sort(key = lambda (a,b,c): c)
-		allMatches = xapian.search(xafile, search)
+			allTags.sort(key = lambda (a,b,c): (c,a,b))
+			
+		# allMatches = xapian.search(xafile, search)
+		params = urllib.urlencode({'config':xafile, 'search':search})
+
+		p = urllib.urlopen("http://%s/workaround.php?%s" % (req.hostname,params))
+		allMatches = eval(p.read())
 		if allMatches is not None:
-			allMatches.sort(key = lambda (a,b):a )
+			allMatches.sort()
 
 		req.content_type = 'html'
 		tmpl = psp.PSP(req, filename='templates/search.tmpl')
@@ -98,7 +105,17 @@ def search(req):
 		return str(ex)
 		index(req)
 
+def admin(req):
+	config = parse_config()
+
+	projects = [p for p in config.sections()]
+	
+	req.content_type = 'html'
+	tmpl = psp.PSP(req, filename='templates/admin.tmpl')
+	tmpl.run(vars = {'projects':projects})
+		
 def index(req):
+	os.system('touch test2')
 	""" Main entrypoint. """
 	
 	config = parse_config()
