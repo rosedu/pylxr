@@ -76,14 +76,18 @@ def fileDB(cursor, srcpath, xpath, lang):
 	
 	# create xapian databse
 	try:
-		xdb = xapian.WritableDatabase(xpath, xapian.DB_CREATE_OR_OPEN)	
+		xdb = xapian.WritableDatabase(xpath, xapian.DB_CREATE_OR_OVERWRITE)	
 	except xapian.Error, msg:
 		print 'Error opening xapian database'
 		print msg
 		sys.exit(1)
+	
 	indexer = xapian.TermGenerator()
 
+	
 	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang)
+	
+	xdb.flush()
 
 
 def walk(top, path, cursor, xdb, indexer, lang):
@@ -122,13 +126,12 @@ def walk(top, path, cursor, xdb, indexer, lang):
 			except sqlite3.Error, msg:
 				print 'Error: ', msg
 				print "Command: ", command
-			
-			
-			# temp field lang
+						
 			if lang == None:
 				indexXapian.indexFile(top, relpath, xdb, indexer)
 			elif os.path.splitext(relpath)[1] in langmap[lang]:
 				indexXapian.indexFile(top, relpath, xdb, indexer)
+
 
 def indexAll(srcpath, dbpath, xpath, lang):
 	''' main indexer function'''
