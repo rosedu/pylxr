@@ -1,18 +1,27 @@
+/* Identarea e facuta de emacs... */
 body {
-	font-family: "Courier New";
-}
-#keyword {
-	color: green;
-	font-weight:bold;
-}
-#string {
-	color:red;
-}
-#comment {
-	color:grey;
-	font-decoration:italic;
-}
-#preprocessor {
-	color:#0000CC;
-	font-weight:bold;
-}
+       font-family: "Courier New";
+       }
+.keyword {
+           color: green;
+           font-weight:bold;
+           }
+.string {
+          color:red;
+          }
+.comment {
+           color:grey;
+           font-decoration:italic;
+           }
+.preprocessor {
+                color:#0000CC;
+                font-weight:bold;
+                }
+div.menu {
+           position:fixed;
+           left:70%;
+           z-index:100;
+           background:#CCCCFF;
+           border:1px solid black;
+           padding:5px;
+           }

@@ -4,6 +4,12 @@
 	<link rel="stylesheet" href="style.css" type="text/css">
   </head>
   <body>
+	<div class="menu" id="themenu">
+	  <form value="form" action="index.py/search" method="post">
+		<input type="text" name="tag"/>
+		<input type="submit" value="Search"/>
+	  </form>
+	</div>
 	<table><%
 i = 0
 for line in lines:
@@ -16,24 +22,24 @@ for line in lines:
     for (typ, con) in line:
         # Okay, should have a map, but it's easier this way.
         if typ=='comment':
-            %><span id="comment"><%= con %></span><%
+            %><span class="comment"><%= con %></span><%
         elif typ=='keyword':
-            %><span id="keyword"><%= con %></span><%
+            %><span class="keyword"><%= con %></span><%
         elif typ=='identifier':
             if con['link'] is not None:
                 %><a href="<%= con['link'] %>"><%= con['disp'] %></a><%
             else:
                 %><%= con['disp'] %><%
         elif typ=='string':
-            %><span id="string"><%= con %></span><%
+            %><span class="string"><%= con %></span><%
         elif typ=='print':
             %><%=  con %><%
         elif typ=='preprocessor':
-            %><span id="preproc"><%= con %></span><%
+            %><span class="preproc"><%= con %></span><%
         elif typ=='include':
-            %><span id="preproc"><%= con %></span><%
+            %><span class="preproc"><%= con %></span><%
         elif typ=='char':
-            %><span id="string"><%= con %></span><%
+            %><span class="string"><%= con %></span><%
         else:
             %><%= "^^^" + typ + " ^^^ " + con + "^^^" %><%
 
