@@ -77,19 +77,22 @@ def search(req):
 		dbfile = config.get('pylxr', 'db-file')
 		xafile = config.get('pylxr', 'xapian-dir')
 		
-		directory = os.path.join(os.path.dirname(__file__), "dbsearch/")
+		directory = os.path.join(os.path.dirname(__file__), "dbaccess/")
 		dbsearch = apache.import_module('dbsearch', path=[directory])
 		xapian = apache.import_module('xapianSearch', path=[directory])
 		DBS = dbsearch.DBSearch(dbfile)
 
 		allTags = DBS.searchTag(search, '', allMatches=True)
-		allTags.sort(key = lambda (a,b,c): c)
+		if allTags is not None:
+			allTags.sort(key = lambda (a,b,c): c)
 		allMatches = xapian.search(xafile, search)
+		if allMatches is not None:
+			allMatches.sort(key = lambda (a,b):a )
 
 		req.content_type = 'html'
 		tmpl = psp.PSP(req, filename='templates/search.tmpl')
 		tmpl.run( vars = { 'allTags':allTags, 'allMatches':allMatches, 'search':search } )
-	except Exception as ex:
+	except Exception, ex:
 		return str(ex)
 		index(req)
 

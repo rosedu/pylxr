@@ -1,0 +1,33 @@
+<html>
+  <head>
+	<title>Searching tag '<%= search %>'</title>
+	<link rel="stylesheet" href="/style.css" type="text/css">
+  </head>
+  <body>
+<%@ include file="menu.tmpl" %>
+	<div class="tags">
+	  CTags search:
+	  <table>
+		<tr><th>File</th><th>Line</th><th>Type</th></tr>
+<%
+if allTags is not None:
+   for (f,ln,k) in allTags:
+   %><tr><td><a href="/index.py?r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td><td><%= k %></td></tr>
+<%
+%>
+	  </table>
+	</div>
+	<hr />
+	<div class="xapian">
+	  Xapian search:
+	  <table>
+		<tr><th>File</th><th>Line</th></tr>
+<%
+if allMatches is not None:
+   for (f,ln) in allMatches:
+   %><tr><td><a href="/index.py?r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td></tr>
+<%
+%>
+	</div>
+  </body>
+</html>

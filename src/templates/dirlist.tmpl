@@ -1,9 +1,10 @@
 <html>
   <head>
 	<title>Directory listing for <%= dirpath %></title>
-	<!-- Link to some stylesheet ? :( -->
+	<link rel="stylesheet" href="style.css" type="text/css">	
   </head>
   <body>
+<%@ include file="menu.tmpl" %>
 	<table>
 	  <tr><th>File</th><th>Size</th><th>Date</th></tr><%
 for h in listing:
