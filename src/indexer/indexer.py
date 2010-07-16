@@ -35,7 +35,8 @@ def tagDB(cursor, tagFile):
 	# create tagls table
 	command = 'CREATE TABLE IF NOT EXISTS Tags (' + \
 				'name TEXT NOT NULL, file TEXT NOT NULL, ' + \
-				'lineNumber INTEGER NOT NULL, kind TEXT NOT NULL)'
+				'lineNumber INTEGER NOT NULL, kind TEXT NOT NULL, ' + \
+				'UNIQUE (name,file,lineNumber,kind) )'
 	try : 
 		cursor.execute(command)
 	except sqlite3.Error, msg:
@@ -45,7 +46,7 @@ def tagDB(cursor, tagFile):
 	# add tags
 	stat = tagFile.first(entry)
 	while stat:
-		command = 'INSERT INTO Tags ' + \
+		command = 'REPLACE INTO Tags ' + \
 			'(name, file, lineNumber, kind) values ' + \
 			'(\'%s\', \'%s\', \'%i\', \'%s\')' % \
 			( entry['name'], entry['file'], \
@@ -65,7 +66,8 @@ def fileDB(cursor, srcpath, xpath, lang):
 	# may need more columns
 	command = 'CREATE TABLE IF NOT EXISTS Files (' + \
 			'name TEXT NOT NULL, size INTEGER, ' + \
-			'mtime INTEGER, type TEXT NOT NULL)'
+			'mtime INTEGER, type TEXT NOT NULL, ' +\
+			'UNIQUE (name))'
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
@@ -91,7 +93,7 @@ def walk(top, path, cursor, xdb, indexer, lang):
 	dirpath = os.path.join(top, path)
 	
 	if path != '.':
-		command = 'INSERT INTO Files (name, size, mtime, type) ' + \
+		command = 'REPLACE INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', NULL, NULL, \'dir\') ' % ("/" + path)
 		try:
 			cursor.execute(command)
@@ -111,14 +113,16 @@ def walk(top, path, cursor, xdb, indexer, lang):
 			walk(top, relpath, cursor, xdb, indexer, lang)
 		elif S_ISREG(mode):
 			print 'Indexing file %s' % relpath
-			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
-				'values (\'%s\', %i, %i, \'reg\') ' % \
+		
+			command = 'REPLACE INTO Files (name, size, mtime, type) ' + \
+				'values (\'%s\', %i, %i, \'reg\')' % \
 				("/"+relpath, fstat.st_size, fstat.st_mtime)
 			try:
 				cursor.execute(command)
 			except sqlite3.Error, msg:
 				print 'Error: ', msg
 				print "Command: ", command
+			
 			
 			# temp field lang
 			if lang == None:
