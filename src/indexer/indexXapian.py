@@ -6,8 +6,8 @@ import os
 def indexFile(top, fname, db, indexer): 
 	''' add file lines to xapian database '''
 	
-	text = open(os.path.join(top,fname), 'r').read()
-	for idx,line in enumerate(text.split('\n')):
+	f = open(os.path.join(top,fname), 'r')
+	for idx,line in enumerate(f):
 		doc = xapian.Document()
 		doc.set_data(line)
 		doc.add_value(0, str(fname))

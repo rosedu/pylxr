@@ -15,7 +15,7 @@ import indexXapian
 # will add more
 langmap = { 'c':['.c','.h'], \
 			'c++':['.c++','.cc','.cp','.cpp','.cxx','.h','.h++', \
-					'.hh','.hp','.hpp','.hxx','.C','.H'] }
+					'.hh','.hp','.hpp','.hxx','.C','.H','.c'] }
 
 
 def usage():
