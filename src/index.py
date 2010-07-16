@@ -92,14 +92,15 @@ def search(req):
 			
 		# allMatches = xapian.search(xafile, search)
 		params = urllib.urlencode({'config':xafile, 'search':search})
-		p = urllib.urlopen("%s/workaround.php?%s" % (config.get('pylxr','web-url'),params))
+		web_url = config.get('pylxr', 'web-url')
+		p = urllib.urlopen("%s/workaround.php?%s" % (web_url,params))
 		allMatches = eval(p.read())
 		if allMatches is not None:
 			allMatches.sort()
 
 		req.content_type = 'html'
 		tmpl = psp.PSP(req, filename='templates/search.tmpl')
-		tmpl.run( vars = { 'allTags':allTags, 'allMatches':allMatches, 'search':search } )
+		tmpl.run( vars = {'allTags':allTags, 'allMatches':allMatches, 'search':search, 'web_url':web_url} )
 	except Exception, ex:
 		return str(ex)
 		index(req)
