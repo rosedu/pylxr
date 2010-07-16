@@ -25,10 +25,12 @@ def do_dir(req, config, path):
 		content.sort(key = lambda (x,y,z,t): (t,x))
 		listing = []
 		for (f, s, d, t) in content:
-			father = re.search("^(.*)/",f).group(0)[:-1]
+			father = re.search("^(.*)/*(.*)/",f).group(0)[:-1]
 			if path != father:
 				continue
-			e = re.search("[\w.\s]*\w$", f).group(0) # somehow, it works ?!?
+			e = f[::-1]
+			e = re.search("[a-zA-Z_\-0-9\.]+/", e).group(0)
+			e = e[::-1]
 			if t == 'dir':
 				listing.append( {'type':'dir', 'link':f, 'display':e} )
 			elif t=='reg':
