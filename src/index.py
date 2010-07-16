@@ -69,6 +69,30 @@ def parse_config(filename='pylxr.ini'):
 	config.read(fullpath)
 	return config
 
+def search(req):
+	try:
+		search = req.form['tag']
+		
+		config = parse_config()
+		dbfile = config.get('pylxr', 'db-file')
+		xafile = config.get('pylxr', 'xapian-dir')
+		
+		directory = os.path.join(os.path.dirname(__file__), "dbsearch/")
+		dbsearch = apache.import_module('dbsearch', path=[directory])
+		xapian = apache.import_module('xapianSearch', path=[directory])
+		DBS = dbsearch.DBSearch(dbfile)
+
+		allTags = DBS.searchTag(search, '', allMatches=True)
+		allTags.sort(key = lambda (a,b,c): c)
+		allMatches = xapian.search(xafile, search)
+
+		req.content_type = 'html'
+		tmpl = psp.PSP(req, filename='templates/search.tmpl')
+		tmpl.run( vars = { 'allTags':allTags, 'allMatches':allMatches, 'search':search } )
+	except Exception as ex:
+		return str(ex)
+		index(req)
+
 def index(req):
 	""" Main entrypoint. """
 	
