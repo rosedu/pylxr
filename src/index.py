@@ -92,8 +92,7 @@ def search(req):
 			
 		# allMatches = xapian.search(xafile, search)
 		params = urllib.urlencode({'config':xafile, 'search':search})
-
-		p = urllib.urlopen("http://%s/workaround.php?%s" % (req.hostname,params))
+		p = urllib.urlopen("%s/workaround.php?%s" % (config.get('pylxr','web-url'),params))
 		allMatches = eval(p.read())
 		if allMatches is not None:
 			allMatches.sort()
