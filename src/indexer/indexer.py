@@ -1,3 +1,5 @@
+''' main indexer script '''
+
 import sys
 import os
 import ConfigParser 
@@ -8,6 +10,10 @@ from stat import *
 import subprocess
 import xapian
 import indexXapian
+
+
+# will add more
+langmap = { 'c':['.c','.h'] }
 
 
 def usage():
@@ -51,23 +57,13 @@ def tagDB(cursor, tagFile):
 	
 
 	
-def fileDB(cursor, srcpath, xpath):
+def fileDB(cursor, srcpath, xpath, lang):
 	''' create table with files and search tokens'''
 	
 	# may need more columns
 	command = 'CREATE TABLE IF NOT EXISTS Files (' + \
 			'name TEXT NOT NULL, size INTEGER, ' + \
 			'mtime INTEGER, type TEXT NOT NULL)'
-	try:
-		cursor.execute(command)
-	except sqlite3.Error, msg:
-		print 'Error: ', msg
-		print "Command: ", command
-		
-	command = 'CREATE TABLE IF NOT EXISTS Search (' + \
-			'tag TEXT NOT NULL, file TEXT NOT NULL,' + \
-			'lineNumber INTEGER NOT NULL)' 
-	
 	try:
 		cursor.execute(command)
 	except sqlite3.Error, msg:
@@ -80,15 +76,16 @@ def fileDB(cursor, srcpath, xpath):
 	except xapian.Error, msg:
 		print 'Error opening xapian database'
 		print msg
-		sys.exit(1)	
+		sys.exit(1)
 	indexer = xapian.TermGenerator()
 
-	walk(os.path.join(srcpath), '.', cursor, xdb, indexer)
+	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang)
 
 
-def walk(top, path, cursor, xdb, indexer):
+def walk(top, path, cursor, xdb, indexer, lang):
 	''' recursive folder walk'''
 	
+	global langmap
 	dirpath = os.path.join(top, path)
 	
 	if path != '.':
@@ -109,7 +106,7 @@ def walk(top, path, cursor, xdb, indexer):
 		else:
 			relpath = f
 		if S_ISDIR(mode):
-			walk(top, relpath, cursor, xdb, indexer)
+			walk(top, relpath, cursor, xdb, indexer, lang)
 		elif S_ISREG(mode):
 			print 'Indexing file %s' % relpath
 			command = 'INSERT INTO Files (name, size, mtime, type) ' + \
@@ -121,8 +118,55 @@ def walk(top, path, cursor, xdb, indexer):
 				print 'Error: ', msg
 				print "Command: ", command
 			
-			indexXapian.indexFile(top, relpath, xdb, indexer)
-			
+			# temp field lang
+			if lang == None:
+				indexXapian.indexFile(top, relpath, xdb, indexer)
+			elif os.path.splitext(relpath)[1] in langmap[lang]:
+				indexXapian.indexFile(top, relpath, xdb, indexer)
+
+def indexAll(srcpath, dbpath, xpath, lang):
+	print 'Generating tag file'
+	try:
+		command = 'ctags --fields=nK -R -f %s' % \
+			os.path.abspath(os.path.join( \
+		 	os.path.dirname(__file__), 'tags'))
+		if lang != None:
+			command += ' --language-force=%s' % lang
+		prog = subprocess.Popen(command.split(), cwd = srcpath)
+		prog.wait()
+	except (KeyboardInterrupt, SystemExit):
+		prog.terminate()
+
+	# open tag file
+	try:
+		tagFile = CTags(os.path.abspath(os.path.join( \
+				 os.path.dirname(__file__),  'tags')))
+	except:
+		print 'Error on open tags'
+		return 1
+
+	# open database
+	try:
+		db = sqlite3.connect(dbpath)
+		cursor = db.cursor()
+	except sqlite3.Error, msg:
+		print dbpath
+		print msg
+		return 1
+
+	print 'Inserting tags into database'
+	tagDB(cursor, tagFile)
+	print 'Indexing files'
+	fileDB(cursor, srcpath, xpath, lang)
+
+	db.commit()
+	cursor.close()
+
+	#remove tags file
+	os.remove(os.path.abspath(os.path.join( \
+		 os.path.dirname(__file__),  'tags')))
+
+
 
 def main(conf):
 	
@@ -138,7 +182,8 @@ def main(conf):
 		
 	srcpath = 'src'
 	dbapth = 'newdb'
-	xpath = 'xdb' 
+	xpath = 'xdb'
+	lang = None
 	# parsing ini file
 	for s in parser.sections():
 		print 'Started indexing project %s' % s
@@ -149,48 +194,11 @@ def main(conf):
 				dbpath = o[1]
 			elif o[0] == 'xapian-dir':
 				xpath = o[1]
+			elif o[0] == 'language':
+				lang = o[1].lower()
+	#			if val
 		
-		
-		print 'Generating tag file'
-		try:
-			command = 'ctags --fields=nK -R -f %s' % \
-				os.path.abspath(os.path.join( \
-			 	os.path.dirname(__file__), 'tags'))
-			prog = subprocess.Popen(command.split(), cwd = srcpath)
-			prog.wait()
-		except (KeyboardInterrupt, SystemExit):
-			prog.terminate()
-
-		# open tag file
-		try:
-			tagFile = CTags(os.path.abspath(os.path.join( \
-					 os.path.dirname(__file__),  'tags')))
-		except:
-			print 'Error on open tags'
-			return 1
-
-
-		# open database
-		try:
-			db = sqlite3.connect(dbpath)
-			cursor = db.cursor()
-		except sqlite3.Error, msg:
-			print dbpath
-			print msg
-			return 1
-
-		print 'Inserting tags into database'
-		tagDB(cursor, tagFile)
-		print 'Indexing files'
-		fileDB(cursor, srcpath, xpath)
-	
-		db.commit()
-		cursor.close()
-	
-		#remove tags file
-		os.remove(os.path.abspath(os.path.join( \
-			 os.path.dirname(__file__),  'tags')))
-		
+		indexAll(srcpath, dbpath, xpath, lang)
 		print 'Finished indexing project %s\n' % s
 		
 	
