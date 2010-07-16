@@ -14,17 +14,34 @@ import indexXapian
 
 # will add more
 langmap = { 'c':['.c','.h'], \
-			'c++':['.c++','.cc','.cp','.cpp','.cxx','.h','.h++', \
-					'.hh','.hp','.hpp','.hxx','.C','.H','.c'] }
+			'c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
+					'.h++','.hh','.hp','.hpp','.hxx','.C','.H'], \
+			'python':['.py','.pyx','.pxd','.pxi','.scons'], \
+			'c#':['.cs'], \
+			'java':['.java'], \
+			'javascript':['.js'], \
+			'html':['.htm','.html'], \
+			'basic':['.bas','.bi','.bb','.pb']
+		}
+
+
+def printLang():
+	''' print language map '''
+
+	global langmap
+	keys = langmap.keys()
+	keys.sort()
+	for k in keys:
+		print k + ':', reduce(lambda x,y: x + ' ' + y, langmap[k])
 
 
 def usage():
 	''' print usage'''
 
 	print 'Usage:'
-	print '\tpython indexer.py'
+	print '\trun:\tpython %s [-c <conf.ini>]' % __file__
 	print 'or'
-	print '\tpython indexer.py -c <conf.ini>'	
+	print '\tlist languages:\tpython %s -l' % __file__
 
 
 def tagDB(cursor, tagFile):
@@ -56,10 +73,9 @@ def tagDB(cursor, tagFile):
 		except sqlite3.Error, msg:
 			print 'Error: ', msg
 			print "Command: ", command
-		stat = tagFile.next(entry)
-	
+		stat = tagFile.next(entry)	
 
-	
+
 def fileDB(cursor, srcpath, xpath, lang):
 	''' create table with files and search tokens'''
 	
@@ -81,21 +97,18 @@ def fileDB(cursor, srcpath, xpath, lang):
 		print 'Error opening xapian database'
 		print msg
 		sys.exit(1)
-	
-	indexer = xapian.TermGenerator()
 
-	
-	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang)
-	
+	indexer = xapian.TermGenerator()
+	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang)	
 	xdb.flush()
 
 
 def walk(top, path, cursor, xdb, indexer, lang):
 	''' recursive folder walk'''
-	
+
 	global langmap
 	dirpath = os.path.join(top, path)
-	
+
 	if path != '.':
 		command = 'REPLACE INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', NULL, NULL, \'dir\') ' % ("/" + path)
@@ -104,7 +117,7 @@ def walk(top, path, cursor, xdb, indexer, lang):
 		except sqlite3.Error, msg:
 			print 'Error: ', msg
 			print "Command: ", command
-	
+
 	for f in  os.listdir(dirpath):
 		abspath = os.path.join(dirpath, f)
 		fstat  = os.stat(abspath)
@@ -177,6 +190,7 @@ def indexAll(srcpath, dbpath, xpath, lang):
 	os.remove(os.path.abspath(os.path.join( \
 		 os.path.dirname(__file__),  'tags')))
 
+
 def validateLang(lang):
 	global langmap
 	try:
@@ -224,13 +238,16 @@ def main(conf):
 	
 if __name__ == '__main__':
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'c:')
+		opts, args = getopt.getopt(sys.argv[1:], 'c:',['lang'])
 	except getopt.GetoptError, msg:
 		print msg
 		usage()
 		sys.exit()
 	for o, a in opts:
-		if o == '-c':
+		if o == '--lang':
+			printLang()
+			sys.exit(0)
+		elif o == '-c':
 			if len(args) != 0:
 				print 'Too many arguments'
 				usage()
@@ -239,4 +256,5 @@ if __name__ == '__main__':
 	if len(sys.argv) == 1:
 		sys.exit(main('../pylxr.ini'))
 	print usage()
+	sys.exit(1)
 
