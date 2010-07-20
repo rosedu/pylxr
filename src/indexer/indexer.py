@@ -139,11 +139,11 @@ def walk(top, path, cursor, xdb, indexer, lang):
 			except sqlite3.Error, msg:
 				print 'Error: ', msg
 				print "Command: ", command
-						
+
 			if lang == None:
-				indexXapian.indexFile(top, relpath, xdb, indexer)
+				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
 			elif os.path.splitext(relpath)[1] in langmap[lang]:
-				indexXapian.indexFile(top, relpath, xdb, indexer)
+				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
 
 
 def indexAll(srcpath, dbpath, xpath, lang):

@@ -2,110 +2,24 @@ import sys
 import xapian
 import os
 
-state = 0
-
-def ignoreStrCommPy(line):
-	''' ingnore wors in strings and comments -> Python'''
-	global state
-
-	ret = ''
-	l = len(line)
-	crt = 0
-	while l != crt:
-		if state == 0:
-			if line[crt] == '\"':
-				if line[crt+1] == '\"':
-					crt += 2
-					ret += ' '
-				else:
-					state = 1
-					crt += 1
-					ret += ' '
-			elif line[crt] == '\'':
-				if line[crt+1] == '\'':
-					crt += 2
-					ret += ' '
-				else:
-					state = 2
-					crt += 1
-					ret += ' '
-			elif line[crt] == '#':
-				ret += '\n'
-				return ret
-			else:
-				ret += line[crt]
-				crt += 1
-		elif state == 1:
-			if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\"':
-				crt += 2
-				state = 0
-			else:
-				crt += 1
-		elif state == 2:
-			if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\'':
-				crt += 2
-				state = 0
-			else:
-				crt += 1
-		else:
-			ret += line[crt]
-			crt += 1
-	return ret
-	
-
-
-def ignoreStrComm(line):
-	''' ignore words in strings and comments -> C,C++'''
-	global state
-
-	ret = ''
-	l = len(line)
-	crt = 0
-	while l != crt:
-		if state == 0:
-			if line[crt] == '\"':
-				if line[crt+1] == '\"':
-					crt += 2
-					ret += ' '
-				else:
-					state = 1
-					crt += 1
-					ret += ' '
-			elif line[crt] == '/' and crt+1 != l and line[crt+1] == '/':
-				ret += '\n'
-				return ret
-			elif line[crt] == '/' and crt+1 != l and line[crt+1] == '*':
-				crt += 2
-				state = 2
-				ret += ' '
-			else:
-				ret += line[crt]
-				crt += 1
-		elif state == 1:
-			if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\"':
-				crt += 2
-				state = 0
-			else:
-				crt += 1
-		elif state == 2:
-			if line[crt] == '*' and crt+1 != l and line[crt+1] == '/':
-				crt += 2
-				state = 0
-			else:
-				crt += 1
-		else:
-			ret += line[crt]
-			crt += 1
-	return ret
-	
-
-def indexFile(top, fname, db, indexer): 
+def indexFile(top, fname, db, indexer, lang): 
 	''' add file lines to xapian database '''
+	
+	if lang != None:
+		try:
+			module = __import__(name='lang.'+lang,fromlist=['CommentParser'])
+			ign = module.CommentParser()
+		except:
+			print 'Invalid language file (%s.py)in lang directory' % lang
+			sys.exit(1)
 	
 	f = open(os.path.join(top,fname), 'r')
 	for idx,line in enumerate(f):
 		doc = xapian.Document()
-		line = ignoreStrComm(line).strip()
+		if lang != None: 
+			line = ign.ignoreComment(line).strip()
+		else:
+			line = line.strip()
 		if line != '':
 			doc.set_data(line)
 			doc.add_value(0, str(fname))
