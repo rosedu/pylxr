@@ -5,8 +5,13 @@ class DBSearch:
 	''' Use for database query'''
 	
 	def __init__(self, dbpath):
-		self.db = sqlite3.connect(dbpath)
-		self.cursor = self.db.cursor()
+		try:
+			self.db = sqlite3.connect(dbpath)
+			self.cursor = self.db.cursor()
+		except sqlite3.Error, msg:
+			print 'Error:', msg
+			print 'DBpath:', dbpath
+			
 	
 	def searchTag(self, tag, fname, allMatches=False):
 		'''
