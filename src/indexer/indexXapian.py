@@ -22,7 +22,7 @@ def ignoreStrCommPy(line):
 					crt += 1
 					ret += ' '
 			elif line[crt] == '\'':
-				line[crt+1] == '\'':
+				if line[crt+1] == '\'':
 					crt += 2
 					ret += ' '
 				else:
