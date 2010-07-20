@@ -4,8 +4,8 @@ import os
 
 state = 0
 
-def ignoreStrComm(line):
-	''' ignore words in strings and comments'''
+def ignoreStrCommPy(line):
+	''' ingnore wors in strings and comments -> Python'''
 	global state
 
 	ret = ''
@@ -14,9 +14,63 @@ def ignoreStrComm(line):
 	while l != crt:
 		if state == 0:
 			if line[crt] == '\"':
-				state = 1
+				if line[crt+1] == '\"':
+					crt += 2
+					ret += ' '
+				else:
+					state = 1
+					crt += 1
+					ret += ' '
+			elif line[crt] == '\'':
+				line[crt+1] == '\'':
+					crt += 2
+					ret += ' '
+				else:
+					state = 2
+					crt += 1
+					ret += ' '
+			elif line[crt] == '#':
+				ret += '\n'
+				return ret
+			else:
+				ret += line[crt]
 				crt += 1
-				ret += ' '
+		elif state == 1:
+			if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\"':
+				crt += 2
+				state = 0
+			else:
+				crt += 1
+		elif state == 2:
+			if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\'':
+				crt += 2
+				state = 0
+			else:
+				crt += 1
+		else:
+			ret += line[crt]
+			crt += 1
+	return ret
+	
+
+
+def ignoreStrComm(line):
+	''' ignore words in strings and comments -> C,C++'''
+	global state
+
+	ret = ''
+	l = len(line)
+	crt = 0
+	while l != crt:
+		if state == 0:
+			if line[crt] == '\"':
+				if line[crt+1] == '\"':
+					crt += 2
+					ret += ' '
+				else:
+					state = 1
+					crt += 1
+					ret += ' '
 			elif line[crt] == '/' and crt+1 != l and line[crt+1] == '/':
 				ret += '\n'
 				return ret
