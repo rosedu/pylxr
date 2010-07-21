@@ -11,7 +11,6 @@ import subprocess
 import xapian
 import indexXapian
 
-
 # will add more
 langmap = { 'c':['.c','.h'], \
 			'c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
@@ -218,6 +217,8 @@ def main(conf):
 	lang = None
 	# parsing ini file
 	for s in parser.sections():
+		if s=='root':
+			continue
 		print 'Started indexing project %s' % s
 		for o in parser.items(s):
 			if o[0] == 'src-dir':
