@@ -47,6 +47,7 @@ def usage():
 def tagDB(cursor, tagFile):
 	''' create table with tags'''
 
+	print '[Step 2/3]Inserting tags into database (this may take a while)'
 	entry = TagEntry()
 
 	# create tagls table
@@ -78,6 +79,12 @@ def tagDB(cursor, tagFile):
 
 def fileDB(cursor, srcpath, xpath, lang):
 	''' create table with files and search tokens'''
+	global langmap
+	
+	print '[Step 3/3]Indexing files'
+	print 'Counting files'
+	n = count(srcpath, langmap[lang], 0)
+	print 'Found %i files' % n
 	
 	# may need more columns
 	command = 'CREATE TABLE IF NOT EXISTS Files (' + \
@@ -99,14 +106,14 @@ def fileDB(cursor, srcpath, xpath, lang):
 		sys.exit(1)
 
 	indexer = xapian.TermGenerator()
-	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang)	
+	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang, 0, n)	
 	xdb.flush()
 
 
-def walk(top, path, cursor, xdb, indexer, lang):
+def walk(top, path, cursor, xdb, indexer, lang, crtn, totaln):
 	''' recursive folder walk'''
-
 	global langmap
+	
 	dirpath = os.path.join(top, path)
 
 	if path != '.':
@@ -127,9 +134,9 @@ def walk(top, path, cursor, xdb, indexer, lang):
 		else:
 			relpath = f
 		if S_ISDIR(mode):
-			walk(top, relpath, cursor, xdb, indexer, lang)
+			crtn = walk(top, relpath, cursor, xdb, indexer, lang, crtn, totaln)
 		elif S_ISREG(mode):
-			print 'Indexing file %s' % relpath
+		
 		
 			command = 'REPLACE INTO Files (name, size, mtime, type) ' + \
 				'values (\'%s\', %i, %i, \'reg\')' % \
@@ -143,13 +150,29 @@ def walk(top, path, cursor, xdb, indexer, lang):
 			if lang == None:
 				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
 			elif os.path.splitext(relpath)[1] in langmap[lang]:
+				print '[%i%s]Indexing file %s' % (crtn*100/totaln, '%', relpath)
+				crtn = crtn + 1
 				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
+			else:
+				print '[%i%s]Skipping file %s' % (crtn*100/totaln, '%', relpath)
+	return crtn
+
+
+def count(dirpath, exts, n):
+	for f in os.listdir(dirpath):
+		relpath = os.path.join(dirpath, f)
+		mode = os.stat(relpath)[ST_MODE]
+		if S_ISDIR(mode):
+			n = count(relpath, exts, n)
+		elif S_ISREG(mode) and os.path.splitext(relpath)[1] in exts:
+			n += 1
+	return n
 
 
 def indexAll(srcpath, dbpath, xpath, lang):
 	''' main indexer function'''
 
-	print 'Generating tag file'
+	print '[Step 1/3]Generating tag file (this may take a while)'
 	try:
 		command = 'ctags --fields=nK -R -f %s' % \
 			os.path.abspath(os.path.join( \
@@ -178,9 +201,7 @@ def indexAll(srcpath, dbpath, xpath, lang):
 		print msg
 		return 1
 
-	print 'Inserting tags into database'
 	tagDB(cursor, tagFile)
-	print 'Indexing files'
 	fileDB(cursor, srcpath, xpath, lang)
 
 	db.commit()
@@ -216,6 +237,7 @@ def main(conf):
 	dbapth = 'newdb'
 	xpath = 'xdb'
 	lang = None
+	
 	# parsing ini file
 	for s in parser.sections():
 		print 'Started indexing project %s' % s
@@ -229,8 +251,8 @@ def main(conf):
 			elif o[0] == 'language':
 				lang = o[1].lower()
 				if validateLang(lang) == False:
-					print 'Language %s is not implemented, will index in default mode' % lang
-					lang = None
+					print 'Error: Language %s is not implemented' % lang
+					sys.exit(1)
 		
 		indexAll(srcpath, dbpath, xpath, lang)
 		print 'Finished indexing project %s\n' % s
