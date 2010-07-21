@@ -1,16 +1,16 @@
 
 class CommentParser:
+	''' CommentParser for Python language '''
 	
 	def __init__(self):
 		self.state = 0
 
-	def ignoreComment(self, line):
-		''' ignore words in strings and comments'''
-		
+	def ignoreComment(self, line):		
 		ret = ''
 		l = len(line)
 		crt = 0
 		while l != crt:
+			# plain text
 			if self.state == 0:
 				if line[crt] == '\"':
 					ret += ' '
@@ -32,12 +32,14 @@ class CommentParser:
 				else:
 					ret += line[crt]
 					crt += 1
+			# in " string
 			elif self.state == 1:
 				if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\"':
 					crt += 2
 					self.state = 0
 				else:
 					crt += 1
+			# in ' string
 			elif self.state == 2:
 				if line[crt] != '\\' and crt+1 != l and line[crt+1] == '\'':
 					crt += 2

@@ -9,7 +9,7 @@ def indexFile(top, fname, db, indexer, lang):
 		module = __import__(name='lang.'+lang,fromlist=['CommentParser'])
 		ign = module.CommentParser()
 	except:
-		print 'Invalid language file (%s.py)in lang directory' % lang
+		print 'Error on importing: %s.py from lang directory' % lang
 		sys.exit(1)
 	
 	f = open(os.path.join(top,fname), 'r')
