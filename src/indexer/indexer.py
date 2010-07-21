@@ -44,7 +44,7 @@ def usage():
 	print '\tlist languages:\tpython %s -l' % __file__
 
 
-def tagDB(cursor, tagFile):
+def tagDB(cursor, tagFile, ext):
 	''' create table with tags'''
 
 	print '[Step 2/3]Inserting tags into database (this may take a while)'
@@ -64,6 +64,9 @@ def tagDB(cursor, tagFile):
 	# add tags
 	stat = tagFile.first(entry)
 	while stat:
+		if os.path.splitext(entry['name'])[1] not in ext:
+			stat = tagFile.next(entry)	
+			continue
 		command = 'REPLACE INTO Tags ' + \
 			'(name, file, lineNumber, kind) values ' + \
 			'(\'%s\', \'%s\', \'%i\', \'%s\')' % \
@@ -171,7 +174,8 @@ def count(dirpath, exts, n):
 
 def indexAll(srcpath, dbpath, xpath, lang):
 	''' main indexer function'''
-
+	global langmap
+	
 	print '[Step 1/3]Generating tag file (this may take a while)'
 	try:
 		command = 'ctags --fields=nK -R -f %s' % \
@@ -201,7 +205,7 @@ def indexAll(srcpath, dbpath, xpath, lang):
 		print msg
 		return 1
 
-	tagDB(cursor, tagFile)
+	tagDB(cursor, tagFile, langmap[lang])
 	fileDB(cursor, srcpath, xpath, lang)
 
 	db.commit()
