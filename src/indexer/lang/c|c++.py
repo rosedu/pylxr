@@ -13,7 +13,7 @@ class CommentParser:
 		while l != crt:
 			if self.state == 0:
 				if line[crt] == '\"':
-					if line[crt+1] == '\"':
+					if crt+1 != l and line[crt+1] == '\"':
 						crt += 2
 						ret += ' '
 					else:
@@ -42,7 +42,4 @@ class CommentParser:
 					self.state = 0
 				else:
 					crt += 1
-			else:
-				ret += line[crt]
-				crt += 1
 		return ret
