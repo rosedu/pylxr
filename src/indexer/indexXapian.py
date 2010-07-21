@@ -5,13 +5,12 @@ import os
 def indexFile(top, fname, db, indexer, lang): 
 	''' add file lines to xapian database '''
 	
-	if lang != None:
-		try:
-			module = __import__(name='lang.'+lang,fromlist=['CommentParser'])
-			ign = module.CommentParser()
-		except:
-			print 'Invalid language file (%s.py)in lang directory' % lang
-			sys.exit(1)
+	try:
+		module = __import__(name='lang.'+lang,fromlist=['CommentParser'])
+		ign = module.CommentParser()
+	except:
+		print 'Invalid language file (%s.py)in lang directory' % lang
+		sys.exit(1)
 	
 	f = open(os.path.join(top,fname), 'r')
 	for idx,line in enumerate(f):

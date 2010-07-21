@@ -13,8 +13,7 @@ import indexXapian
 
 
 # will add more
-langmap = { 'c':['.c','.h'], \
-			'c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
+langmap = { 'c|c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
 					'.h++','.hh','.hp','.hpp','.hxx','.C','.H'], \
 			'python':['.py','.pyx','.pxd','.pxi','.scons'], \
 			'c#':['.cs'], \
@@ -23,8 +22,7 @@ langmap = { 'c':['.c','.h'], \
 			'html':['.htm','.html'], \
 			'basic':['.bas','.bi','.bb','.pb']
 		}
-
-
+		
 def printLang():
 	''' print language map '''
 
@@ -44,8 +42,9 @@ def usage():
 	print '\tlist languages:\tpython %s -l' % __file__
 
 
-def tagDB(cursor, tagFile, ext):
+def tagDB(cursor, tagFile, lang):
 	''' create table with tags'''
+	global extmap
 
 	print '[Step 2/3]Inserting tags into database (this may take a while)'
 	entry = TagEntry()
@@ -64,7 +63,7 @@ def tagDB(cursor, tagFile, ext):
 	# add tags
 	stat = tagFile.first(entry)
 	while stat:
-		if os.path.splitext(entry['name'])[1] not in ext:
+		if skip(entry['file'], lang, extmap):
 			stat = tagFile.next(entry)	
 			continue
 		command = 'REPLACE INTO Tags ' + \
@@ -86,7 +85,7 @@ def fileDB(cursor, srcpath, xpath, lang):
 	
 	print '[Step 3/3]Indexing files'
 	print 'Counting files'
-	n = count(srcpath, langmap[lang], 0)
+	n = count(srcpath, lang, 0)
 	print 'Found %i files' % n
 	
 	# may need more columns
@@ -109,13 +108,13 @@ def fileDB(cursor, srcpath, xpath, lang):
 		sys.exit(1)
 
 	indexer = xapian.TermGenerator()
-	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang, 0, n)	
+	walk(os.path.join(srcpath), '.', cursor, xdb, indexer, lang, 0, n)
 	xdb.flush()
 
 
 def walk(top, path, cursor, xdb, indexer, lang, crtn, totaln):
 	''' recursive folder walk'''
-	global langmap
+	global extmap
 	
 	dirpath = os.path.join(top, path)
 
@@ -150,24 +149,27 @@ def walk(top, path, cursor, xdb, indexer, lang, crtn, totaln):
 				print 'Error: ', msg
 				print "Command: ", command
 
-			if lang == None:
-				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
-			elif os.path.splitext(relpath)[1] in langmap[lang]:
-				print '[%i%s]Indexing file %s' % (crtn*100/totaln, '%', relpath)
-				crtn = crtn + 1
-				indexXapian.indexFile(top, relpath, xdb, indexer, lang)
-			else:
+			if skip(relpath, lang, extmap) or totaln == 0:
 				print '[%i%s]Skipping file %s' % (crtn*100/totaln, '%', relpath)
+			else:
+				print '[%i%s]Indexing file %s' % (crtn*100/totaln, '%', relpath)
+				ext = os.path.splitext(relpath)
+				l = extmap[ext[1]]
+				indexXapian.indexFile(top, relpath, xdb, indexer, l)
+				crtn = crtn + 1
 	return crtn
 
 
-def count(dirpath, exts, n):
+def count(dirpath, lang, n):
+	''' count files for indexing'''
+	global extmap
+	
 	for f in os.listdir(dirpath):
 		relpath = os.path.join(dirpath, f)
 		mode = os.stat(relpath)[ST_MODE]
 		if S_ISDIR(mode):
-			n = count(relpath, exts, n)
-		elif S_ISREG(mode) and os.path.splitext(relpath)[1] in exts:
+			n = count(relpath, lang, n)
+		elif S_ISREG(mode) and skip(relpath, lang, extmap) == False:
 			n += 1
 	return n
 
@@ -181,8 +183,6 @@ def indexAll(srcpath, dbpath, xpath, lang):
 		command = 'ctags --fields=nK -R -f %s' % \
 			os.path.abspath(os.path.join( \
 		 	os.path.dirname(__file__), 'tags'))
-		if lang != None:
-			command += ' --language-force=%s' % lang
 		prog = subprocess.Popen(command.split(), cwd = srcpath)
 		prog.wait()
 	except (KeyboardInterrupt, SystemExit):
@@ -205,7 +205,7 @@ def indexAll(srcpath, dbpath, xpath, lang):
 		print msg
 		return 1
 
-	tagDB(cursor, tagFile, langmap[lang])
+	tagDB(cursor, tagFile, lang) 
 	fileDB(cursor, srcpath, xpath, lang)
 
 	db.commit()
@@ -216,14 +216,17 @@ def indexAll(srcpath, dbpath, xpath, lang):
 		 os.path.dirname(__file__),  'tags')))
 
 
-def validateLang(lang):
-	global langmap
+def skip(fname, lang, extmap):
 	try:
-		ext = langmap[lang]
+		ext = os.path.splitext(fname)
+		l = extmap[ext[1]]
+	except KeyError, msg:
 		return True
-	except KeyError:
+	if lang[0] == '*':
 		return False
-
+	if l in lang:
+		return False
+	return True
 
 def main(conf):
 	
@@ -237,10 +240,15 @@ def main(conf):
 		print msg
 		return 1
 		
+	# generate extmap from langmap
+	global langmap
+	global extmap
+	extmap = dict([(v,k) for k in langmap for v in langmap[k]])
+		
 	srcpath = 'src'
 	dbapth = 'newdb'
 	xpath = 'xdb'
-	lang = None
+	lang = '*'
 	
 	# parsing ini file
 	for s in parser.sections():
@@ -253,11 +261,11 @@ def main(conf):
 			elif o[0] == 'xapian-dir':
 				xpath = o[1]
 			elif o[0] == 'language':
-				lang = o[1].lower()
-				if validateLang(lang) == False:
-					print 'Error: Language %s is not implemented' % lang
-					sys.exit(1)
-		
+				lang = o[1].lower().split()
+				if '*' in lang:
+					lang = ['*']
+	
+
 		indexAll(srcpath, dbpath, xpath, lang)
 		print 'Finished indexing project %s\n' % s
 		
