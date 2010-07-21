@@ -12,9 +12,10 @@ class Lexer:
             Str("global") | Str("if") | Str("import") | Str("in") |\
             Str("is") | Str("lambda") | Str("not") | Str("or") |\
             Str("pass") | Str("print") | Str("raise") | Str("return") |\
-            Str("try") | Str("while") | Str("with") | Str("yield")
+            Str("try") | Str("while") | Str("with") | Str("yield") |\
+            Str("None") | Str("self")
 
-        self.rComment = Str("#") + Rep(AnyChar) + Eol
+        self.rComment = Str("#") + Rep(AnyBut("\n")) + Eol
         
         self.rLetter = Range("AZaz")
         self.rDigit = Range("09")
@@ -22,13 +23,20 @@ class Lexer:
         self.rIdentifier = (self.rLetter | Str("_")) +\
             Rep(self.rLetter | self.rDigit | Str("_"))
 
-        # Strings 
-        self.rLongStringItem = AnyBut('\\')
-        self.rShortStringItemDQ = AnyBut('\\\n"') | RE("\\.")
-        self.rShortSrtingItemQ = AnyBut("\\\n'") | RE("\\.")
-        self.rLongString = (Str("'''") + Rep(self.rLongStringItem) +\
-                                 Str("'''")) |\
-            (Str('"""') + Rep(self.rLongStringItem) + Str('"""'))
+        # Strings
+        self.rLongStringItemQ = AnyBut('\'\\') | (Str("\\")+AnyChar) |\
+            (Str('\'') + AnyBut('\'')) |\
+            (Str('\'\'') + AnyBut('\''))
+        self.rLongStringItemDQ = AnyBut('"\\') | (Str("\\")+AnyChar) |\
+            (Str('"') + AnyBut('"')) |\
+            (Str('""')+AnyBut('"'))
+        
+        self.rShortStringItemDQ = AnyBut('\\\n"') | (Str("\\") + AnyChar)
+        self.rShortStringItemQ = AnyBut("\\\n'") | (Str("\\") + AnyChar)
+        
+        self.rLongString = (Str('\'\'\'') + Rep(self.rLongStringItemQ) +\
+                                 Str('\'\'\'')) |\
+            (Str('"""') + Rep(self.rLongStringItemDQ) + Str('"""'))
         self.rShortString = (Str("'") + Rep(self.rShortStringItemQ) +\
                                  Str("'")) |\
             (Str('"') + Rep(self.rShortStringItemDQ) + Str('"'))
@@ -50,6 +58,7 @@ class Lexer:
                 (self.rStringLiteral, self.fStringLiteral),
                 (self.rOperators, self.fPrint),
                 (self.rDelimiters, self.fPrint),
+                (RE("(\n)") | Eol, self.fNewline),
                 (AnyChar, self.fPrint)
                 ])
 
@@ -62,13 +71,15 @@ class Lexer:
         sys.path.append(ipath)
         self.DB = __import__("dbsearch").DBSearch(dbfile)
 
+        self.create_output(lex, filename)
+
     def create_output(self, lex, filename):
         f = open(filename, "r")
         scanner = Scanner(lex, f, filename)
         while True:
             token = scanner.read()
-        if token[0] is None:
-            break
+            if token[0] is None:
+                break
         
         if self.__tmpLine is not None:
             self.__lines.append(self.__tmpLine)
@@ -94,7 +105,7 @@ class Lexer:
 
     def fComment(self, scanner, text):
         self.safe_add()
-        self.safe_add( ('comment', text) )
+        self.safe_add( ('comment', self.escape(text)) )
 
     def fIdentifier(self, scanner, text):
         tag = self.DB.searchTag(text, self.__filename)
@@ -110,13 +121,37 @@ class Lexer:
 
     def fStringLiteral(self, scanner, text):
         self.safe_add()
-        self.safe_add( ('string', text) )
+        text = self.escape(text).split('\n')
+        self.safe_add( ('string', text[0]) )
+        if len(text)==1:
+            return
+        
+        self.fNewline(scanner, '')
+        for i in xrange(1,len(text)):
+            self.__tmpElem = ('string', text[i])
+            self.fNewline(scanner, '')
 
     def fPrint(self, scanner, text):
-        escape = {"<":"&lt;", ">":"&gt;", " ":"&nbsp;", "&":"&amp;",\
-                      "\"":"&quot;", "\t":" "*8}
-        for (l,t) in escape.items():
+        if self.__tmpElem is not None:
+            (a,b) = self.__tmpElem
+        else:
+            (a,b) = ('print', '')
+        self.__tmpElem = (a, b+self.escape(text))
+
+    def fNewline(self, scanner, text):
+        if self.__tmpLine is None:
+            self.__tmpLine = []
+        if self.__tmpElem is not None:
+            self.__tmpLine.append(self.__tmpElem)
+            (a,b) = self.__tmpElem
+            self.__tmpElem = (a,'')
+            
+        self.__lines.append(self.__tmpLine)
+        self.__tmpLine = None
+
+    def escape(self, text):
+        escape = [("&","&amp;"), ("<","&lt;"), (">","&gt;"),(" ","&nbsp;"),\
+                      ("\"","&quot;"), ("\t","&nbsp;"*8)]
+        for (l,t) in escape:
             text = text.replace(l,t)
-        
-        (a,b) = self.__tmpElem
-        self.__tmpElem = (a, b+text)
+        return text
