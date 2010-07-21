@@ -95,7 +95,7 @@ class CLexer:
                 # Other stuff
                 (self.rKeyword, self.fKeyword),
                 (self.rIdentifier, self.fIdentifier),
-                #(self.rShit, self.fPrint),
+                # (self.rShit, self.fPrint),
                 (self.rDecimal, self.fPrint),
                 (self.rSpace, self.fSpace),
                 (self.rChar, self.fChar),
@@ -155,6 +155,9 @@ class CLexer:
 
 
     def fPrint(self, scanner, text):
+        escape = {"<":"&lt;", ">":"&gt;", " ":"&nbsp;", "&":"&amp;", "\"":"&quot;"}
+        if text in escape:
+            text = escape[text]
         if self.__tmpElem is None:
             self.__tmpElem = ('print', '')
         (a,b) = self.__tmpElem
@@ -199,6 +202,11 @@ class CLexer:
         self.__tmpElem = None
 
     def fStartOneLineComment(self, scanner, text):
+        if self.__tmpElem is not None:
+            if self.__tmpLine is None:
+                self.__tmpLine = []
+            self.__tmpLine.append(self.__tmpElem)
+            
         scanner.begin('olcomment')
         self.__state = 'olcomment'
         self.__tmpElem = ('comment', '//')

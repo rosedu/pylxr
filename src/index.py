@@ -19,13 +19,19 @@ def do_dir(req, config, path):
 	DB = dbsearch.DBSearch(db_filename)
 	content = DB.searchFile(path+"%")
 
+	# Get the parent of the current path and output it
+	parent = '/'.join(path.split('/')[:-1])
+	if parent == '/':
+		parent = '' # don't ask me why ...
+
 	DEBUG = None
 	listing = []
 	if content is None:
 		DEBUG = ['Forbidden? Or unavailable? Or even inexistent... IDK!']
 	else:
 		content.sort(key = lambda (x,y,z,t): (t,x))
-		listing = []
+		# Hardcoding insertion of '.' and '..' in listing
+		listing = [{'type':'dir', 'link':path, 'display':'.'}, {'type':'dir', 'link':parent, 'display':'..'}]
 		for (f, s, d, t) in content:
 			father = re.search("^(.*)/*(.*)/",f).group(0)[:-1]
 			if path != father:
@@ -107,12 +113,9 @@ def search(req):
 
 def admin(req):
 	config = parse_config()
-
-	projects = [p for p in config.sections()]
-	
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/admin.tmpl')
-	tmpl.run(vars = {'projects':projects})
+	tmpl.run(vars = {'config':config})
 		
 def index(req):
 	os.system('touch test2')
