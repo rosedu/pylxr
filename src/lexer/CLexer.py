@@ -155,7 +155,7 @@ class CLexer:
 
 
     def fPrint(self, scanner, text):
-        escape = {"<":"&lt;", ">":"&gt", " ":"&nbsp;"}
+        escape = {"<":"&lt;", ">":"&gt;", " ":"&nbsp;", "&":"&amp;", "\"":"&quot;"}
         if text in escape:
             text = escape[text]
         if self.__tmpElem is None:
