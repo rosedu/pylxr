@@ -9,6 +9,12 @@ import subprocess
 from datetime import datetime
 import urllib
 
+langmap = [
+	('CLexer',['c++','cc','cp','cpp','cxx','c','h',
+		   'h++','hh','hp','hpp','hxx','C','H']),
+	('PyLexer', ['py'])
+	]
+
 def do_dir(req, config, path):
 	""" Does the stuff needed for a directory (when we have a "?d=..." GET directive). """
 	
@@ -57,13 +63,22 @@ def do_dir(req, config, path):
 
 def do_file(req, config, path):
 	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
-	
+
+	extension = path.split('.')[-1:][0]
+
+	lexer = None
+	for (l,e) in langmap:
+		if extension in e:
+			lexer = l
+	if lexer is None:
+		lexer = 'PlainLexer'
+
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
-	CLexer = apache.import_module('CLexer', path=[directory])
-
+	Lexer = apache.import_module(lexer, path=[directory])
+	
 	fullpath = os.path.join(config.get('pylxr', 'src-dir'), path[1:])
-	lexer = CLexer.CLexer(fullpath, config.get('pylxr', 'db-file'))
-
+	lexer = Lexer.Lexer(fullpath, config.get('pylxr', 'db-file'))
+	
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/source.tmpl')
 	tmpl.run( vars = {

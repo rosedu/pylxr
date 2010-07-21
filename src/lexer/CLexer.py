@@ -3,7 +3,7 @@ from plex.traditional import re as RE
 import sys
 import os
 
-class CLexer:
+class Lexer:
     def __init__(self, ffilename, dbfile):
         self.rKeyword = Str("auto") | Str("break") | Str("case") |\
             Str("char") | Str("const") | Str("continue") | Str("default")|\
@@ -155,7 +155,8 @@ class CLexer:
 
 
     def fPrint(self, scanner, text):
-        escape = {"<":"&lt;", ">":"&gt;", " ":"&nbsp;", "&":"&amp;", "\"":"&quot;"}
+        escape = {"<":"&lt;", ">":"&gt;", " ":"&nbsp;", "&":"&amp;",\
+                      "\"":"&quot;"}
         if text in escape:
             text = escape[text]
         if self.__tmpElem is None:
