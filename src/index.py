@@ -20,7 +20,7 @@ def do_dir(req, config, path):
 	content = DB.searchFile(path+"%")
 
 	# Get the parent of the current path and output it
-	parent = '/' + '/'.join(path.split('/')[:-1])
+	parent = '/'.join(path.split('/')[:-1])
 	if parent == '/':
 		parent = '' # don't ask me why ...
 
