@@ -33,7 +33,7 @@ for line in lines:
         elif typ=='string':
             %><span class="string"><%= con %></span><%
         elif typ=='print':
-            %><%=  con %><%
+            %><%= con %><%
         elif typ=='preprocessor':
             %><span class="preproc"><%= con %></span><%
         elif typ=='include':
