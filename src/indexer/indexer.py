@@ -14,12 +14,17 @@ import indexXapian
 # will add more
 langmap = { 'c|c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
 					'.h++','.hh','.hp','.hpp','.hxx','.C','.H'], \
-			'python':['.py','.pyx','.pxd','.pxi','.scons'], \
+			'python':['.py','.pyx','.pxd','.pxi'], \
+			'asm':['.asm','.ASM','.s','.S'], \
 			'c#':['.cs'], \
 			'java':['.java'], \
 			'javascript':['.js'], \
 			'html':['.htm','.html'], \
-			'basic':['.bas','.bi','.bb','.pb']
+			'basic':['.bas','.bi','.bb','.pb'], \
+			'php':['.php','.php3','.phtm'], \
+			'perl':['.pl','.pm','.plx','.perl'], \
+			'sh':['.sh','.SH','.bsh','.bash','.ksh','.zsh'], \
+			'pascal':['.p','.pas']
 		}
 		
 def printLang():
@@ -85,7 +90,10 @@ def fileDB(cursor, srcpath, xpath, lang):
 	print '[Step 3/3]Indexing files'
 	print 'Counting files'
 	n = count(srcpath, lang, 0)
-	print 'Found %i files' % n
+	if n == 0:
+		print 'No files found, won\'t index any file'
+	else:
+		print 'Found %i files' % n
 	
 	# may need more columns
 	command = 'CREATE TABLE IF NOT EXISTS Files (' + \
@@ -148,14 +156,15 @@ def walk(top, path, cursor, xdb, indexer, lang, crtn, totaln):
 				print 'Error: ', msg
 				print "Command: ", command
 
-			if skip(relpath, lang, extmap) or totaln == 0:
-				print '[%i%s]Skipping file %s' % (crtn*100/totaln, '%', relpath)
-			else:
-				print '[%i%s]Indexing file %s' % (crtn*100/totaln, '%', relpath)
-				ext = os.path.splitext(relpath)
-				l = extmap[ext[1]]
-				indexXapian.indexFile(top, relpath, xdb, indexer, l)
-				crtn = crtn + 1
+			if totaln != 0:
+				if skip(relpath, lang, extmap):
+					print '[%i%s]Skipping file %s' % (crtn*100/totaln, '%', relpath)
+				else:
+					print '[%i%s]Indexing file %s' % (crtn*100/totaln, '%', relpath)
+					ext = os.path.splitext(relpath)
+					l = extmap[ext[1]]
+					indexXapian.indexFile(top, relpath, xdb, indexer, l)
+					crtn = crtn + 1
 	return crtn
 
 
