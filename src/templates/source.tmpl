@@ -2,6 +2,7 @@
   <head>
 	<title>Source code for file <%= filename %></title>
 	<link rel="stylesheet" href="style.css" type="text/css">
+	<script language="javascript" src="scripts.js"></script> 
   </head>
   <body>
 	<%@ include file="menu.tmpl" %>
@@ -9,8 +10,11 @@
 parent = '/'.join(filename.split('/')[:-1])
 file = filename.split('/')[-1:][0]
 %>
-	<p>Source code for file: <a href="?d=<%= parent %>"><%= parent %>/</a><%= file %>. Lines: <%= len(lines) %></p>
-	<table><%
+	<p>
+	  Source code for file: <a href="?d=<%= parent %>"><%= parent %>/</a><%= file %>. Lines: <%= len(lines) %>.
+	  <input type="button" value="No linenumbers" onClick="noLinenumbers()">
+	</p>
+	<table id="source"><%
 i = 0
 for line in lines:
     i = i+1
