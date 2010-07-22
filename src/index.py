@@ -159,7 +159,8 @@ def newconfig(req):
 		config.set(section, option, val)
 
 	fullpath = os.path.join(os.path.dirname(__file__), 'pylxr.ini')
-	with open(fullpath, 'wb') as filename:
+	filename = open(fullpath, 'wb')
+	if filename is not None:
 		config.write(filename)
 	return admin(req)
 	
