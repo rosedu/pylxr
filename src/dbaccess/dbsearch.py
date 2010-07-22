@@ -44,7 +44,7 @@ class DBSearch:
 		self.cursor.execute(command)
 		select = self.cursor.fetchall()
 		if len(select) == 0:
-			return	None
+			return None
 		else:
 			return select
 	

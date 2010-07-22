@@ -9,7 +9,7 @@
 parent = '/'.join(filename.split('/')[:-1])
 file = filename.split('/')[-1:][0]
 %>
-	<p>Source code for file: <a href="?d=<%= parent %>"><%= parent %>/</a><%= file %></p>
+	<p>Source code for file: <a href="?d=<%= parent %>"><%= parent %>/</a><%= file %>. Lines: <%= len(lines) %></p>
 	<table><%
 i = 0
 for line in lines:
