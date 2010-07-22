@@ -4,7 +4,7 @@
 	<link rel="stylesheet" href="/style.css" type="text/css">
   </head>
   <body>
-	<p>Navigate back to <a href="<%= web_url %>/index.py?d=">root</a>.</p>
+	<p>Navigate back to <a href="<%= web_url %>/index.py?proj=<%= proj %>&d=">root</a>.</p>
 	<div class="tags">
 	  CTags search:
 	  <table>
@@ -12,7 +12,7 @@
 <%
 if allTags is not None:
    for (f,ln,k) in allTags:
-   %><tr><td><a href="<%= web_url %>/index.py?r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td><td><%= k %></td></tr>
+   %><tr><td><a href="<%= web_url %>/index.py?proj=<%= proj %>&r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td><td><%= k %></td></tr>
 <%
 %>
 	  </table>
@@ -25,7 +25,7 @@ if allTags is not None:
 <%
 if allMatches is not None:
    for (f,ln) in allMatches:
-   %><tr><td><a href="<%= web_url %>/index.py?r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td></tr>
+   %><tr><td><a href="<%= web_url %>/index.py?proj=<%= proj %>&r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td></tr>
 <%
 %>
 	</div>

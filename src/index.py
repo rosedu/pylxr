@@ -15,13 +15,13 @@ langmap = [
 	('PyLexer', ['py'])
 	]
 
-def do_dir(req, config, path):
+def do_dir(req, config, proj, path):
 	""" Does the stuff needed for a directory (when we have a "?d=..." GET directive). """
 	
 	import_dir = os.path.join(os.path.dirname(__file__), "dbaccess")
 	dbsearch = apache.import_module('dbsearch', path=[import_dir])
 
-	db_filename = config.get("pylxr", "db-file")
+	db_filename = config.get(proj, "db-file")
 	DB = dbsearch.DBSearch(db_filename)
 	content = DB.searchFile(path+"%")
 
@@ -55,13 +55,14 @@ def do_dir(req, config, path):
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/dirlist.tmpl')
 	tmpl.run( vars={
+			'proj': proj,
 			'DEBUG': DEBUG,
 			'listing': listing,
 			'dirpath': path
 			})
 	
 
-def do_file(req, config, path):
+def do_file(req, config, proj, path):
 	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
 
 	extension = path.split('.')[-1:][0]
@@ -76,12 +77,13 @@ def do_file(req, config, path):
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
 	Lexer = apache.import_module(lexer, path=[directory])
 	
-	fullpath = os.path.join(config.get('pylxr', 'src-dir'), path[1:])
-	lexer = Lexer.Lexer(fullpath, config.get('pylxr', 'db-file'))
+	fullpath = os.path.join(config.get(proj, 'src-dir'), path[1:])
+	lexer = Lexer.Lexer(fullpath, config.get(proj, 'db-file'))
 	
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/source.tmpl')
 	tmpl.run( vars = {
+			'proj': proj,
 			'filename': path,
 			'lines':lexer.get()
 			})
@@ -97,10 +99,11 @@ def parse_config(filename='pylxr.ini'):
 def search(req):
 	try:
 		search = req.form['tag']
+		proj = req.form['proj']
 		
 		config = parse_config()
-		dbfile = config.get('pylxr', 'db-file')
-		xafile = config.get('pylxr', 'xapian-dir')
+		dbfile = config.get(proj, 'db-file')
+		xafile = config.get(proj, 'xapian-dir')
 		
 		directory = os.path.join(os.path.dirname(__file__), "dbaccess/")
 		dbsearch = apache.import_module('dbsearch', path=[directory])
@@ -113,7 +116,7 @@ def search(req):
 			
 		# allMatches = xapian.search(xafile, search)
 		params = urllib.urlencode({'config':xafile, 'search':search})
-		web_url = config.get('pylxr', 'web-url')
+		web_url = config.get('root', 'web-url')
 		p = urllib.urlopen("%s/workaround.php?%s" % (web_url,params))
 		allMatches = eval(p.read())
 		if allMatches is not None:
@@ -121,11 +124,45 @@ def search(req):
 
 		req.content_type = 'html'
 		tmpl = psp.PSP(req, filename='templates/search.tmpl')
-		tmpl.run( vars = {'allTags':allTags, 'allMatches':allMatches, 'search':search, 'web_url':web_url} )
+		tmpl.run( vars = {
+				'proj':proj,
+				'allTags':allTags,
+				'allMatches':allMatches,
+				'search':search,
+				'web_url':web_url}
+			  )
 	except Exception, ex:
 		return str(ex)
 		index(req)
 
+def do_projects(req, config):
+	projects = []
+	for i in config.get('root','projects').split(','):
+		if i == 'root':
+			continue
+		projects.append( (i, config.get('root','web-url')+'index.py?proj='+i ) )
+
+	req.content_type = 'html'
+	tmpl = psp.PSP(req, filename='templates/projects.tmpl')
+	tmpl.run( vars = {'projects':projects} )
+				 
+
+def newconfig(req):
+	config = ConfigParser.ConfigParser()
+	for (key, val) in req.form.items():
+		if len(key.split('/')) < 2:
+			continue
+		section = key.split('/')[0]
+		option = key.split('/')[1]
+		if section not in config.sections():
+			config.add_section(section)
+		config.set(section, option, val)
+
+	fullpath = os.path.join(os.path.dirname(__file__), 'pylxr.ini')
+	with open(fullpath, 'wb') as filename:
+		config.write(filename)
+	return admin(req)
+	
 def admin(req):
 	config = parse_config()
 	req.content_type = 'html'
@@ -133,16 +170,29 @@ def admin(req):
 	tmpl.run(vars = {'config':config})
 		
 def index(req):
-	os.system('touch test2')
 	""" Main entrypoint. """
-	
 	config = parse_config()
 					   
 	uri = req.unparsed_uri
-	regexp = re.compile("(d=(?P<dir>.+))|(r=(?P<file>.+))")
-	options = regexp.search(uri)
-	if options is None:
-		return do_dir(req, config, "")
-	if options.group('dir') is not None:
-		return do_dir(req, config, options.group('dir'))
-	return do_file(req, config, options.group('file'))
+	unparsedGET = uri.split('?')
+	if len(unparsedGET) < 2:
+		return do_projects(req, config)
+	
+	GET = unparsedGET[1].split('&')
+	options = dict(default=None)
+	for option in GET:
+		a = option.split('=')[0]
+		b = option.split('=')[1]
+		options[a] = b
+
+	if 'proj' in options:
+		proj = options['proj']
+	else:
+		return do_projects(req, config)
+
+	if 'r' in options:
+		return do_file(req, config, proj, options['r'])
+	
+	if 'd' in options:
+		return do_dir(req, config, proj, options['d'])
+	return do_dir(req, config, proj, '')

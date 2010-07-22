@@ -11,7 +11,7 @@ parent = '/'.join(filename.split('/')[:-1])
 file = filename.split('/')[-1:][0]
 %>
 	<p>
-	  Source code for file: <a href="?d=<%= parent %>"><%= parent %>/</a><%= file %>. Lines: <%= len(lines) %>.
+	  Source code for file: <a href="?proj=<%= proj %>&d=<%= parent %>"><%= parent %>/</a><%= file %>. Lines: <%= len(lines) %>.
 	  <input type="button" value="No linenumbers" onClick="noLinenumbers()">
 	</p>
 	<table id="source"><%

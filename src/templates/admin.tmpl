@@ -19,37 +19,34 @@ def f(a, b):
 	<title>Administration Zone</title>
 	<link rel="stylesheet" href="style.css" type="text/css">
   </head>
-  <body>
-	<form name="input" action="index.py/newconfig" method="post"> <!-- we should AJAX it -->
+  <body class="admin">
+	<form name="input" action="<%= f('root', 'web-url') %>index.py/newconfig" method="post">
 	  <div class="root">
 		<b>Main configuration section:</b>
 		<table>
-		  <tr><td>Use xapian [yes/no]?</td><td><input type="text" name="xapian" value="<%= f('root','xapian') %>"/></td></tr> 
-		  <tr><td>Password</td><td><input type="text" name="passwd" value="<%= f('root','passwd') %>"/></td></tr>
-		  <tr><td>Projects (comma separated)</td><td><input type="text" name="projects" value="<%= f('root','projects') %>"/></td></tr>
+		  <tr><td>Password</td><td><input type="text" name="root/passwd" value="<%= f('root','passwd') %>"/></td></tr>
+		  <tr><td>Projects (comma separated)</td><td><input type="text" name="root/projects" value="<%= f('root','projects') %>"/></td></tr>
+		  <tr><td>Web URL:</td><td><input type="text" name="root/web-url" value="<%= f('root', 'web-url') %>"/></td></tr>
         </table>
 		<hr/>
 	  </div><%
 for p in projects:
-    if p=='root':
-        # Main config part
-%>
-    <%
-else:
        # Regular project fields
 %>
 		<div class="<%= p %>">
           Project: <b><i><%= p %></i></b>
 		  <table>
-			<tr><td>Web URL:</td><td><input type="text" name="web-url" value="<%= f(p, 'web-url') %>"/></td></tr>
-			<tr><td>Sources directory:</td><td><input type="text" name="src-dir" value="<%= f(p,'src-dir') %>"/></td></tr>
-			<tr><td>Main DB file:</td><td><input type="text" name="db-file" value="<%= f(p, 'db-file') %>"/></td></tr>
-			<tr><td>Xapian DB directory:</td><td><input type="text" name="xapian-dir" value="<%= f(p, 'xapian-dir') %>"/></td></tr>
+			<tr><td>Sources directory:</td><td><input type="text" name="<%= p %>/src-dir" value="<%= f(p,'src-dir') %>"/></td></tr>
+			<tr><td>Main DB file:</td><td><input type="text" name="<%= p %>/db-file" value="<%= f(p, 'db-file') %>"/></td></tr>
+			<tr><td>Xapian DB directory:</td><td><input type="text" name="<%= p %>/xapian-dir" value="<%= f(p, 'xapian-dir') %>"/></td></tr>
+			<tr><td>Language:</td><td><input type="text" name="<%= p %>/language" value="<%= f(p, 'language') %>" /></td></tr>
 		  </table>
 		  <hr/>
 		</div>
 <%
 %>
+		<input type="submit" value="Store"/>
+		<input type="button" value="Home" onClick="window.location='<%= f('root','web-url') %>index.py'" />
 	</form>
   </body>
 </html>

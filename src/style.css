@@ -27,3 +27,8 @@ div.menu {
            border:1px solid black;
            padding:5px;
            }
+
+body.admin {
+             width:60%;
+             left:20%;
+           }

@@ -1,0 +1,14 @@
+<html>
+  <head>
+	<title>Project listing</title>
+  </head>
+  <body>
+	Projects hosted on this PyLXR box:
+	<ul>
+<%
+for (a, b) in projects:
+%><li><a href="<%= b %>"><%= a %></a></li><%
+%>
+	</ul>
+  </body>
+</html>
