@@ -5,13 +5,20 @@ H.setdefault('')
 for section in config.sections():
     for option in config.options(section):
         H[(section,option)] = config.get(section,option)
-projects = config.get('root','projects').split(',')
 def f(a, b):
     global H
     if (a,b) in H:
         return H[(a,b)]
     else:
         return ''
+
+if f('root', 'projects') != '':
+    projects = f('root','projects').split(',')
+else:
+    projects = []
+
+if f('root', 'web-url') == '':
+    H[('root','web-url')] = web_url
 
 %>
 <html>
@@ -20,7 +27,7 @@ def f(a, b):
 	<link rel="stylesheet" href="style.css" type="text/css">
   </head>
   <body class="admin">
-	<form name="input" action="<%= f('root', 'web-url') %>index.py/newconfig" method="post">
+	<form name="input" action="<%= web_url %>index.py/newconfig" method="post">
 	  <div class="root">
 		<b>Main configuration section:</b>
 		<table>

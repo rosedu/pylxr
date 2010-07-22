@@ -165,10 +165,24 @@ def newconfig(req):
 	return admin(req)
 	
 def admin(req):
+	# Let's guess the web-url.
+
+
 	config = parse_config()
+	try:
+		web_url = config.get('root', 'web-url')
+		if  web_url == '':
+			raise Exception('woops')
+		
+	except Exception, ex:
+		web_url = req.construct_url("/")
+		
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/admin.tmpl')
-	tmpl.run(vars = {'config':config})
+	tmpl.run(vars = {
+			'config':config,
+			'web_url':web_url
+			})
 		
 def index(req):
 	""" Main entrypoint. """
