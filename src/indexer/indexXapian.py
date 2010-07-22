@@ -9,8 +9,7 @@ def indexFile(top, fname, db, indexer, lang):
 		module = __import__(name='lang.'+lang,fromlist=['CommentParser'])
 		ign = module.CommentParser()
 	except:
-		print 'Error on importing: %s.py from lang directory' % lang
-		sys.exit(1)
+		lang = None
 	
 	f = open(os.path.join(top,fname), 'r')
 	for idx,line in enumerate(f):

@@ -11,39 +11,12 @@ import subprocess
 import xapian
 import indexXapian
 
-# will add more
-langmap = { 'c_c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
-					'.h++','.hh','.hp','.hpp','.hxx','.C','.H'], \
-			'python':['.py','.pyx','.pxd','.pxi'], \
-			'asm':['.asm','.ASM','.s','.S'], \
-			'c#':['.cs'], \
-			'java':['.java'], \
-			'javascript':['.js'], \
-			'html':['.htm','.html'], \
-			'basic':['.bas','.bi','.bb','.pb'], \
-			'php':['.php','.php3','.phtm'], \
-			'perl':['.pl','.pm','.plx','.perl'], \
-			'sh':['.sh','.SH','.bsh','.bash','.ksh','.zsh'], \
-			'pascal':['.p','.pas']
-		}
-		
-def printLang():
-	''' print language map '''
-
-	global langmap
-	keys = langmap.keys()
-	keys.sort()
-	for k in keys:
-		print k + ':', reduce(lambda x,y: x + ' ' + y, langmap[k])
-
 
 def usage():
 	''' print usage'''
 
 	print 'Usage:'
-	print '\trun:\tpython %s [-c <conf.ini>]' % __file__
-	print 'or'
-	print '\tlist languages:\tpython %s -l' % __file__
+	print '\tpython %s [-c <conf.ini>]' % __file__
 
 
 def tagDB(cursor, tagFile, lang):
@@ -235,7 +208,27 @@ def skip(fname, lang, extmap):
 	if l in lang:
 		return False
 	return True
-
+	
+def loadLang():
+	global langmap
+	
+	try:
+		f = open(os.path.join('lang','langmap'), 'r')
+	except IOError, msg:
+		print 'Error openning langmap'
+		print 'Message:', msg 
+		sys.exit(1)
+	
+	langmap = {}
+	for line in f:
+		line = line.strip()
+		# ignore comment or blank line
+		if len(line) == 0 or line[0] == '#':
+			continue
+		
+		toks = line.split()
+		langmap[toks[0]] = [ext for ext in toks[1:]]	
+	
 def main(conf):
 	
 	parser = ConfigParser.ConfigParser()
@@ -251,8 +244,9 @@ def main(conf):
 	# generate extmap from langmap
 	global langmap
 	global extmap
+	loadLang()
 	extmap = dict([(v,k) for k in langmap for v in langmap[k]])
-		
+
 	srcpath = 'src'
 	dbapth = 'newdb'
 	xpath = 'xdb'
@@ -282,16 +276,13 @@ def main(conf):
 	
 if __name__ == '__main__':
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'c:',['lang'])
+		opts, args = getopt.getopt(sys.argv[1:], 'c:')
 	except getopt.GetoptError, msg:
 		print msg
 		usage()
 		sys.exit()
 	for o, a in opts:
-		if o == '--lang':
-			printLang()
-			sys.exit(0)
-		elif o == '-c':
+		if o == '-c':
 			if len(args) != 0:
 				print 'Too many arguments'
 				usage()
