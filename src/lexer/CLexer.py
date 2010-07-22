@@ -143,7 +143,7 @@ class Lexer:
             r['link'] = None
         else:
             (f,l,k) = tag
-            r['link'] = "?r=/%s#%s" % (f,l)
+            r['link'] = "r=/%s#%s" % (f,l)
 
         if self.__tmpLine is None:
             self.__tmpLine = []

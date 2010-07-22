@@ -31,7 +31,7 @@ for line in lines:
             %><span class="keyword"><%= con %></span><%
         elif typ=='identifier':
             if con['link'] is not None:
-                %><a href="<%= con['link'] %>"><%= con['disp'] %></a><%
+                %><a href="?proj=<%= proj %>&<%= con['link'] %>"><%= con['disp'] %></a><%
             else:
                 %><%= con['disp'] %><%
         elif typ=='string':
