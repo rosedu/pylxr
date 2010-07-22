@@ -175,7 +175,8 @@ def admin(req):
 			raise Exception('woops')
 		
 	except Exception, ex:
-		web_url = req.construct_url("/")
+		web_url = re.match("^(?P<id>.*)/index.py/(.*)$",
+				   req.construct_url(req.unparsed_uri)).group('id') + '/'
 		
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/admin.tmpl')
