@@ -5,6 +5,7 @@
   </head>
   <body>
 <%@ include file="menu.tmpl" %>
+	<p>Want to go back to <a href="index.py">project selection page</a>?</p>
 	<table>
 	  <tr><th>File</th><th>Size</th><th>Date</th></tr><%
 for h in listing:
@@ -19,7 +20,7 @@ for h in listing:
 		else:
 			size = ''
 			date = ''
-	%><tr><td><a href="?<%= directive %>=<%= link %>"><%= display %></a></td><td><%= size %></td><td><%= date %></td></tr>
+	%><tr><td><a href="?proj=<%= proj %>&<%= directive %>=<%= link %>"><%= display %></a></td><td><%= size %></td><td><%= date %></td></tr>
 <%
 	else:
 		display = h['display']

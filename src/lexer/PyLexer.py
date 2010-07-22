@@ -114,7 +114,7 @@ class Lexer:
             r['link'] = None
         else:
             (f,l,k) = tag
-            r['link'] = "?r=/%s#%s" % (f,l)
+            r['link'] = "r=/%s#%s" % (f,l)
 
         self.safe_add()
         self.safe_add( ('identifier',r) )
