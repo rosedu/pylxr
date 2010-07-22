@@ -12,7 +12,7 @@ import xapian
 import indexXapian
 
 # will add more
-langmap = { 'c|c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
+langmap = { 'c_c++':['.c++','.cc','.cp','.cpp','.cxx','.c','.h', \
 					'.h++','.hh','.hp','.hpp','.hxx','.C','.H'], \
 			'python':['.py','.pyx','.pxd','.pxi'], \
 			'asm':['.asm','.ASM','.s','.S'], \
