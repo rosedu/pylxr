@@ -25,6 +25,8 @@ def do_dir(req, config, proj, path):
 	DB = dbsearch.DBSearch(db_filename)
 	content = DB.searchFile(path+"%")
 
+	web_url = config.get('root', 'web-url')
+
 	# Get the parent of the current path and output it
 	parent = '/'.join(path.split('/')[:-1])
 	if parent == '/':
@@ -55,6 +57,7 @@ def do_dir(req, config, proj, path):
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/dirlist.tmpl')
 	tmpl.run( vars={
+			'web_url':web_url,
 			'proj': proj,
 			'DEBUG': DEBUG,
 			'listing': listing,
@@ -62,7 +65,7 @@ def do_dir(req, config, proj, path):
 			})
 	
 
-def do_file(req, config, proj, path):
+def do_file(req, config, proj, path, tag):
 	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
 
 	extension = path.split('.')[-1:][0]
@@ -79,10 +82,14 @@ def do_file(req, config, proj, path):
 	
 	fullpath = os.path.join(config.get(proj, 'src-dir'), path[1:])
 	lexer = Lexer.Lexer(fullpath, config.get(proj, 'db-file'))
+
+	web_url = config.get('root','web-url')
 	
 	req.content_type = 'html'
 	tmpl = psp.PSP(req, filename='templates/source.tmpl')
 	tmpl.run( vars = {
+			'tag':tag,
+			'web_url':web_url,
 			'proj': proj,
 			'filename': path,
 			'lines':lexer.get()
@@ -201,13 +208,18 @@ def index(req):
 		b = option.split('=')[1]
 		options[a] = b
 
+	if 'tag' in options:
+		tag = options['tag']
+	else:
+		tag = None
+
 	if 'proj' in options:
 		proj = options['proj']
 	else:
 		return do_projects(req, config)
 
 	if 'r' in options:
-		return do_file(req, config, proj, options['r'])
+		return do_file(req, config, proj, options['r'], tag)
 	
 	if 'd' in options:
 		return do_dir(req, config, proj, options['d'])

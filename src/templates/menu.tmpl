@@ -1,7 +1,7 @@
-<div class="menu" id="searchmenu">
-  <form value="form" action="index.py/search" method="post">
-	<input type="text" name="tag"/>
-	<input type="submit" value="Search"/>
-	<input type="hidden" value="<%= proj %>" name="proj"/>
-  </form>
+<div class="menu">
+	<input type="text" name="tag" id="Stag"/>
+	<input type="button" value="Search" onClick = 'AJAXRequest("<%= web_url %>index.py/search")'/>
+	<input type="hidden" value="<%= proj %>" name="proj" id="Sproj"/>
+	<div id="Sresult" class="result">
+	</div>
 </div>

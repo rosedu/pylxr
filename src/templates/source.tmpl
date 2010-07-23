@@ -4,7 +4,17 @@
 	<link rel="stylesheet" href="style.css" type="text/css">
 	<script language="javascript" src="scripts.js"></script> 
   </head>
+<%
+if tag is not None:
+%>
+  <body onLoad = 'AJAXPrepare("<%= web_url %>index.py/search", "<%= tag %>")'>
+<%
+else:
+%>
   <body>
+<%
+
+%>
 	<%@ include file="menu.tmpl" %>
 <%
 parent = '/'.join(filename.split('/')[:-1])
