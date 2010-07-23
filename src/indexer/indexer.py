@@ -247,31 +247,21 @@ def main(conf):
 	loadLang()
 	extmap = dict([(v,k) for k in langmap for v in langmap[k]])
 
-	srcpath = 'src'
-	dbapth = 'newdb'
-	xpath = 'xdb'
-	lang = '*'
-	
 	# parsing ini file
-	for s in parser.sections():
-		if s=='root':
+	projects = parser.get('root', 'projects').split(',')
+	for proj in projects:
+		print 'Started indexing project %s' % proj
+		try:
+			srcpath = parser.get(proj, 'src-dir')
+			dbpath = parser.get(proj, 'db-file')
+			xpath = parser.get(proj, 'xapian-dir')
+			lang = parser.get(proj, 'language').split()
+		except ConfigParser.NoOptionError, msg:
+			print msg
+			print 'Skipping project %s\n' % proj
 			continue
-		print 'Started indexing project %s' % s
-		for o in parser.items(s):
-			if o[0] == 'src-dir':
-				srcpath = o[1]
-			elif o[0] == 'db-file':
-				dbpath = o[1]
-			elif o[0] == 'xapian-dir':
-				xpath = o[1]
-			elif o[0] == 'language':
-				lang = o[1].lower().split()
-				if '*' in lang:
-					lang = ['*']
-	
-
 		indexAll(srcpath, dbpath, xpath, lang)
-		print 'Finished indexing project %s\n' % s
+		print 'Finished indexing project %s\n' % proj
 		
 	
 if __name__ == '__main__':
