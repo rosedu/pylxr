@@ -51,7 +51,7 @@ for line in lines:
             %><span class="keyword"><%= con %></span><%
         elif typ=='identifier':
             if con['link'] is not None:
-                %><a href="?proj=<%= proj %>&<%= con['link'] %>"><%= con['disp'] %></a><%
+                %><a style="color:blue;text-decoration:underline" onClick='AJAXPrepare("<%= web_url %>/index.py/search","<%= con["disp"] %>")'><%= con['disp'] %></a><%
             else:
                 %><%= con['disp'] %><%
         elif typ=='string':
