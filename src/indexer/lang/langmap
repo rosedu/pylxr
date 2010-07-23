@@ -1,0 +1,17 @@
+# Use this file to define file extensions for a specific language
+# The extensions across all languages must be unique
+# Example:
+#	language	.ext1 .ext2 .ext3
+
+c_c++		.c .h .c++ .cc .cp .cpp .cxx .h++ .hh .hp .hpp .hxx .C .H
+python		.py .pyx .pxd .pxi
+asm			.asm .ASM .s .S
+c#			.cs
+java		.java
+javascript	.js
+html		.htm .html
+basic		.bas .bi .bb .pb
+php			.php .php3 .phtm
+perl		.pl .pm .plx .perl
+sh			.sh .SH .bsh .bash .ksh .zsh
+pascal		.p .pas
