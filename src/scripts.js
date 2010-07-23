@@ -40,6 +40,8 @@ function AJAXRequest(weburl) {
 	AJAX.send("tag="+tag+"&proj="+proj);
 }
 
+// wrapper for AJAXRequest. Use it each time you want to pop-up the
+// search results without actually entering text into search textbox.
 function AJAXPrepare(weburl, tag) {
 	document.getElementById("Stag").value = tag;
 	AJAXRequest(weburl);

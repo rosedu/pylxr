@@ -69,8 +69,6 @@ class Lexer:
                 # Other preprocessor directives
                 (RE("^\w*#"), self.fStartPreprocessor),
                 State('preproc', [
-                        (Str('<'), self.fStartAngularReference),
-                        (Str('"'), self.fStartStringReference),
                         (self.rNewline, self.fEndPreprocessor),
                         (self.rTab, self.fTab),
                         (self.rSpace, self.fSpace),
