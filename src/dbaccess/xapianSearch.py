@@ -23,7 +23,7 @@ def search(dbpath, qry):
 	enquire.set_query(query)
 	
 	ret = []
-	for m in enquire.get_mset(0,db.get_doccount()):
+	for m in enquire.get_mset(0,100):
 		ret.append((m.document.get_value(0), \
 				int(m.document.get_value(1))))
 	return ret
