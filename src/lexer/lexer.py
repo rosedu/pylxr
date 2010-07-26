@@ -25,6 +25,7 @@ class Lexer():
                 line = None
                 continue
             vals = val.split('\n')
+            i = 0
             for oneval in vals:
                 oneval = self.escape(oneval)
                 if line is None:
@@ -43,8 +44,9 @@ class Lexer():
                     line.append(('string', oneval))
                 else:
                     line.append(('print', oneval))
-                    
-                if oneval != vals[-1] and len(vals)>1:
+
+                i = i+1
+                if i != len(vals) and len(vals)>1:
                     result.append(line)
                     line = None
         if line is not None:
