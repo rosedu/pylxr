@@ -34,7 +34,7 @@ for (a,b) in to_anchor:
 %><%= file %></span>. Lines: <%= len(lines) %>.
 	  <input type="button" value="No linenumbers" onClick="noLinenumbers()">
 	</p>
-	<table id="source"><%
+	<table class="thecode"><%
 i = 0
 for line in lines:
     i = i+1
@@ -50,10 +50,7 @@ for line in lines:
         elif typ=='keyword':
             %><span class="keyword"><%= con %></span><%
         elif typ=='identifier':
-            if con['link'] is not None:
-                %><a style="color:blue;text-decoration:underline" onClick='AJAXPrepare("<%= web_url %>/index.py/search","<%= con["disp"] %>")'><%= con['disp'] %></a><%
-            else:
-                %><%= con['disp'] %><%
+            %><a style="color:blue;text-decoration:underline" onClick='AJAXPrepare("<%= web_url %>/index.py/search","<%= con %>")'><%= con %></a><%
         elif typ=='string':
             %><span class="string"><%= con %></span><%
         elif typ=='print':

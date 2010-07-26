@@ -1,6 +1,12 @@
 body {
        font-family: "Courier New";
        }
+
+table.thecode {
+                font-size:small;
+                max-width:70%;
+                }
+
 .keyword {
            color: green;
            font-weight:bold;
@@ -12,7 +18,7 @@ body {
            color:grey;
            font-decoration:italic;
            }
-.preprocessor {
+.preproc {
                 color:#0000CC;
                 font-weight:bold;
                 }

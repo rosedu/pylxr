@@ -4,16 +4,9 @@ from mod_python import apache, psp
 import os
 import re
 import ConfigParser
-import pickle
 import subprocess
 from datetime import datetime
 import urllib
-
-langmap = [
-	('CLexer',['c++','cc','cp','cpp','cxx','c','h',
-		   'h++','hh','hp','hpp','hxx','C','H']),
-	('PyLexer', ['py'])
-	]
 
 def do_dir(req, config, proj, path):
 	""" Does the stuff needed for a directory (when we have a "?d=..." GET directive). """
@@ -68,17 +61,8 @@ def do_dir(req, config, proj, path):
 def do_file(req, config, proj, path, tag):
 	""" Will pass the file to the lexer, and then the structure will be returned to the server page and processed there. """
 
-	extension = path.split('.')[-1:][0]
-
-	lexer = None
-	for (l,e) in langmap:
-		if extension in e:
-			lexer = l
-	if lexer is None:
-		lexer = 'PlainLexer'
-
 	directory = os.path.join(os.path.dirname(__file__), "lexer/")
-	Lexer = apache.import_module(lexer, path=[directory])
+	Lexer = apache.import_module('lexer', path=[directory])
 	
 	fullpath = os.path.join(config.get(proj, 'src-dir'), path[1:])
 	lexer = Lexer.Lexer(fullpath, config.get(proj, 'db-file'))
