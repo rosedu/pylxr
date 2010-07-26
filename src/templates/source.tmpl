@@ -7,11 +7,11 @@
 <%
 if tag is not None:
 %>
-  <body onLoad = 'AJAXPrepare("<%= web_url %>index.py/search", "<%= tag %>")'>
+  <body onLoad='AJAXPrepare("<%= web_url %>index.py/search", "<%= tag %>"); highlight();'>
 <%
 else:
 %>
-  <body>
+  <body onLoad='highlight();'>
 <%
 
 %>
@@ -38,7 +38,7 @@ for (a,b) in to_anchor:
 i = 0
 for line in lines:
     i = i+1
-%><tr><td><a name="<%= i %>" href="#<%= i %>"><%= i %></a><td><%
+%><tr id="l<%= i %>"><td><a name="<%= i %>" href="#<%= i %>"><%= i %></a><td><%
     if line is None:
 %></td></tr>
 <%

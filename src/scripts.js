@@ -46,3 +46,12 @@ function AJAXPrepare(weburl, tag) {
 	document.getElementById("Stag").value = tag;
 	AJAXRequest(weburl);
 }
+
+function highlight() {
+	url = window.location.href;
+	splitted = url.split('#');
+	if (splitted.length < 2)
+		return;
+	line = "l" + splitted[1];
+	document.getElementById(line).style.background = '#AAEEFF';
+}
