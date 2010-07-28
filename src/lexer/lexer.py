@@ -5,7 +5,10 @@ import pygments.token as tokens
 class Lexer():
     def __init__(self, filename, dbpath):
         self.__content = open(filename, 'r').read()
-        self.__lexer = pygments.lexers.get_lexer_for_filename(filename)
+        try:
+            self.__lexer = pygments.lexers.get_lexer_for_filename(filename)
+        except Exception, err:
+            self.__lexer = None
 
     def escape(self, text):
         escape = [("&","&amp;"), ("<","&lt;"), (">","&gt;"),(" ","&nbsp;"),\
@@ -17,7 +20,11 @@ class Lexer():
     def get(self):
         line = None
         result = []
-        for (typ,val) in self.__lexer.get_tokens(self.__content):
+        if self.__lexer is not None:
+            contentTokens = self.__lexer.get_tokens(self.__content)
+        else:
+            contentTokens = [(tokens.Text, self.__content)]
+        for (typ,val) in contentTokens:
             if val=='\n':
                 if line is None:
                     line = None
