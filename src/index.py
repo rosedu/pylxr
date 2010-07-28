@@ -140,7 +140,9 @@ def do_projects(req, config):
 
 def newconfig(req):
 	config = ConfigParser.ConfigParser()
-	for (key, val) in req.form.items():
+	data = eval(req.form['data'])
+
+	for (key, val) in data:
 		if len(key.split('/')) < 2:
 			continue
 		section = key.split('/')[0]
@@ -149,11 +151,16 @@ def newconfig(req):
 			config.add_section(section)
 		config.set(section, option, val)
 
-	fullpath = os.path.join(os.path.dirname(__file__), 'pylxr.ini')
-	filename = open(fullpath, 'wb')
-	if filename is not None:
-		config.write(filename)
-	return admin(req)
+	try:
+		fullpath = os.path.join(os.path.dirname(__file__), 'pylxr.ini')
+		filename = open(fullpath, 'wb')
+		if filename is not None:
+			config.write(filename)
+			return 'New configuration stored.'
+		else:
+			return 'Cannot open file. Not enough permissions?'
+	except Exception, err:
+		return 'Cannot open file. Not enough permissions?</br>' + err.__str__()
 	
 def admin(req):
 	# Let's guess the web-url.

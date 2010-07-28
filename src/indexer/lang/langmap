@@ -3,10 +3,10 @@
 # Example:
 #	language	.ext1 .ext2 .ext3
 
-c_c++		.c .h .c++ .cc .cp .cpp .cxx .h++ .hh .hp .hpp .hxx .C .H
+c_cpp		.c .h .c++ .cc .cp .cpp .cxx .h++ .hh .hp .hpp .hxx .C .H
 python		.py .pyx .pxd .pxi
 asm			.asm .ASM .s .S
-c#			.cs
+csharp		.cs
 java		.java
 javascript	.js
 html		.htm .html

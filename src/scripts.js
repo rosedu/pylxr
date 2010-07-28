@@ -1,3 +1,5 @@
+// take the entire source code and display it without annoying linenumbers
+// TODO: make it using the pygments HTML formatter (AJAXify)
 function noLinenumbers() {
 	popup = window.open('', 'name', 'height=600, width=600, scrollbars=1')
 	pbody = popup.document
@@ -54,4 +56,37 @@ function highlight() {
 		return;
 	line = "l" + splitted[1];
 	document.getElementById(line).style.background = '#AAEEFF';
+}
+
+function AJAXConfigStore(weburl) {
+	if ( window.XMLHttpRequest ) {
+		AJAX = new XMLHttpRequest();
+	} else {
+		AJAX = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	AJAX.onreadystatechange = function() {
+		if ( AJAX.readyState == 4 ) {
+			document.getElementById("AJAXMSG").innerHTML =
+				AJAX.responseText;
+		} else {
+			document.getElementById("AJAXMSG").innerHTML = "Processing data...";
+		}
+	}
+
+	dataArray = [];
+	pattern = /\//;
+	for (i in document.form1.elements) {
+		if (pattern.test(document.form1.elements[i].name) ) {
+			name = document.form1.elements[i].name;
+			value = document.form1.elements[i].value;
+			dataArray.push( '("' + name + '","' + value + '")' );
+		}
+	}
+	data = escape('[' + dataArray.join(',') + ']');
+	document.getElementById("AJAXMSG").innerHTML = "Sending configuration stream:</br>" + data;
+
+	AJAX.open("POST", weburl, true);
+	AJAX.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	AJAX.send("data=" + data);
 }

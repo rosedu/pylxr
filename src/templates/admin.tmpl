@@ -25,9 +25,10 @@ if f('root', 'web-url') == '':
   <head>
 	<title>Administration Zone</title>
 	<link rel="stylesheet" href="style.css" type="text/css">
+	<script language="javascript" src="../scripts.js"></script>
   </head>
   <body class="admin">
-	<form name="input" action="<%= web_url %>index.py/newconfig" method="post">
+	<form name="form1" action="<%= web_url %>index.py/newconfig" method="post">
 	  <div class="root">
 		<b>Main configuration section:</b>
 		<table>
@@ -52,8 +53,9 @@ for p in projects:
 		</div>
 <%
 %>
-		<input type="submit" value="Store"/>
-		<input type="button" value="Home" onClick="window.location='<%= f('root','web-url') %>index.py'" />
+		<input type="button" value="Store" onClick="AJAXConfigStore('<%= f('root','web-url') %>index.py/newconfig')"/>
+		<input type="button" value="Back to projects" onClick="window.location='<%= f('root','web-url') %>index.py'" />
 	</form>
+	<div id="AJAXMSG"></div>
   </body>
 </html>
