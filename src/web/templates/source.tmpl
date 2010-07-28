@@ -1,0 +1,75 @@
+<html>
+  <head>
+	<title>Source code for file <%= filename %></title>
+	<link rel="stylesheet" href="web/css/source-style.css" type="text/css">
+	<link rel="stylesheet" href="web/css/menu-style.css" type="text/css">
+	<script language="javascript" src="web/js/scripts.js"></script> 
+  </head>
+<%
+if tag is not None:
+%>
+  <body onLoad='AJAXPrepare("<%= web_url %>index.py/search", "<%= tag %>"); highlight();'>
+<%
+else:
+%>
+  <body onLoad='highlight();'>
+<%
+
+%>
+	<%@ include file="menu.tmpl" %>
+<%
+path = filename.split('/')[1:-1]
+link = ''
+to_anchor = [ ('+', '') ]
+for p in path:
+    link += '/' + p
+    to_anchor.append( (p, link) )
+
+file = filename.split('/')[-1:][0]
+%>
+	<p class="head">
+	  Source code for file: <span style='color:blue'><%
+for (a,b) in to_anchor:
+%><a href="?proj=<%= proj %>&d=<%= b %>"><%= a %></a>/<%
+
+%><%= file %></span>. Lines: <%= len(lines) %>.
+	  <input type="button" value="No linenumbers" onClick="noLinenumbers()">
+	</p><hr/>
+	<table class="thecode"><%
+i = 0
+for line in lines:
+    i = i+1    
+%><tr id="l<%= i %>"><td class="linenr"><a name="<%= i %>" href="#<%= i %>"><%= i %></a><td id="source"><%
+    if line is None:
+%></td></tr>
+<%
+        continue
+    for (typ, con) in line:
+        # Okay, should have a map, but it's easier this way.
+        if typ=='comment':
+            %><span class="comment"><%= con %></span><%
+        elif typ=='keyword':
+            %><span class="keyword"><%= con %></span><%
+        elif typ=='identifier':
+            %><a style="color:blue;text-decoration:underline" onClick='AJAXPrepare("<%= web_url %>/index.py/search","<%= con %>")'><%= con %></a><%
+        elif typ=='string':
+            %><span class="string"><%= con %></span><%
+        elif typ=='print':
+            %><%= con %><%
+        elif typ=='preprocessor':
+            %><span class="preproc"><%= con %></span><%
+        elif typ=='include':
+            %><span class="preproc"><%= con %></span><%
+        elif typ=='char':
+            %><span class="string"><%= con %></span><%
+        else:
+            %><%= "^^^" + typ + " ^^^ " + con + "^^^" %><%
+
+    # INDENT
+%></td></tr>
+<%
+
+%>
+	</table>
+  </body>
+</html>

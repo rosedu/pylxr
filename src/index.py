@@ -48,7 +48,7 @@ def do_dir(req, config, proj, path):
 				listing.append( {'type':'n/a', 'display':e} )
 
 	req.content_type = 'html'
-	tmpl = psp.PSP(req, filename='templates/dirlist.tmpl')
+	tmpl = psp.PSP(req, filename='web/templates/dirlist.tmpl')
 	tmpl.run( vars={
 			'web_url':web_url,
 			'proj': proj,
@@ -70,7 +70,7 @@ def do_file(req, config, proj, path, tag):
 	web_url = config.get('root','web-url')
 	
 	req.content_type = 'html'
-	tmpl = psp.PSP(req, filename='templates/source.tmpl')
+	tmpl = psp.PSP(req, filename='web/templates/source.tmpl')
 	tmpl.run( vars = {
 			'tag':tag,
 			'web_url':web_url,
@@ -114,7 +114,7 @@ def search(req):
 			allMatches.sort()
 
 		req.content_type = 'html'
-		tmpl = psp.PSP(req, filename='templates/search.tmpl')
+		tmpl = psp.PSP(req, filename='web/templates/search.tmpl')
 		tmpl.run( vars = {
 				'proj':proj,
 				'allTags':allTags,
@@ -134,7 +134,7 @@ def do_projects(req, config):
 		projects.append( (i, config.get('root','web-url')+'index.py?proj='+i ) )
 
 	req.content_type = 'html'
-	tmpl = psp.PSP(req, filename='templates/projects.tmpl')
+	tmpl = psp.PSP(req, filename='web/templates/projects.tmpl')
 	tmpl.run( vars = {'projects':projects} )
 				 
 
@@ -177,7 +177,7 @@ def admin(req):
 				   req.construct_url(req.unparsed_uri)).group('id') + '/'
 		
 	req.content_type = 'html'
-	tmpl = psp.PSP(req, filename='templates/admin.tmpl')
+	tmpl = psp.PSP(req, filename='web/templates/admin.tmpl')
 	tmpl.run(vars = {
 			'config':config,
 			'web_url':web_url

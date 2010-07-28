@@ -1,0 +1,20 @@
+<html>
+  <head>
+	<title>Project listing</title>
+	<link rel="stylesheet" href="web/css/projects-style.css" type="text/css" />
+  </head>
+  <body>
+	<h1>Welcome to PyLXR!</h1>
+	<hr>
+	<p>The PyLXR project started from the urge of a more configure-friendly <a href="http://lxr.linux.no/">lxr</a> source browsing site. PyLXR is based on <a href="python.org">Python</a> (as the name suggests) and can index C, C++ and Python projects using <a href="http://ctags.sourceforge.net/">CTags</a> and <a href="http://pygments.org/">pygments</a>. The tag-search is CTags-based, and the string search is powered by <a href="http://xapian.org/">Xapian</a>.</p>
+
+	<p>You can access the administration interface <a href="index.py/admin">here</a>!</p>
+	<p>Projects hosted on this PyLXR box:</p>
+	<ul>
+<%
+for (a, b) in projects:
+%><li><a href="<%= b %>"><%= a %></a></li><%
+%>
+	</ul>
+  </body>
+</html>

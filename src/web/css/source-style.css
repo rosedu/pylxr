@@ -1,0 +1,39 @@
+body {
+       font-family: "Courier New";
+       }
+
+table.thecode {
+                font-size:small;
+                border-collapse:collapse;
+                }
+tr {
+     vertical-align:top;
+     }
+
+.source {
+            width:inherit;
+            }
+
+.linenr {
+            background-color:#F0F0F0;
+            border:1px solid black;
+            text-align:right;
+            padding:1px;
+            }
+
+.keyword {
+           color: green;
+           font-weight:bold;
+           }
+.string {
+          color:red;
+          }
+.comment {
+           color:grey;
+           font-style:italic;
+           }
+.preproc {
+                color:#0000CC;
+                font-weight:bold;
+                }
+

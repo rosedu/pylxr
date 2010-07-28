@@ -1,0 +1,26 @@
+<!--	<p>Navigate back to <a href="<%= web_url %>/index.py?proj=<%= proj %>&d=">root</a>.</p> -->
+	<div class="tags">
+	  CTags search:
+	  <table>
+		<tr><th>File</th><th>Line</th><th>Type</th></tr>
+<%
+if allTags is not None:
+   for (f,ln,k) in allTags:
+   %><tr><td><a href="<%= web_url %>/index.py?tag=<%= search %>&proj=<%= proj %>&r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td><td><%= k %></td></tr>
+<%
+%>
+	  </table>
+	</div>
+	<hr />
+	<div class="xapian">
+	  Xapian search (limited at 100 hits):
+	  <table>
+		<tr><th>File</th><th>Line</th></tr>
+<%
+if allMatches is not None:
+   for (f,ln) in allMatches:
+   %><tr><td><a href="<%= web_url %>/index.py?tag=<%= search %>&proj=<%= proj %>&r=/<%= f %>#<%= ln %>"><%= f %></a></td><td><%= ln %></td></tr>
+<%
+%>
+	</div>
+

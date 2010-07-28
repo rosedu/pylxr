@@ -1,0 +1,7 @@
+<div class="menu">
+	<input type="text" name="tag" id="Stag" onKeyDown="if (event.keyCode == 13) document.getElementById('SButton').click()"/>
+	<input type="button" value="Search" onClick = 'AJAXRequest("<%= web_url %>index.py/search")' id="SButton"/>
+	<input type="hidden" value="<%= proj %>" name="proj" id="Sproj"/>
+	<div id="Sresult" class="result">
+	</div>
+</div>

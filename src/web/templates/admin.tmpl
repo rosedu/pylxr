@@ -1,0 +1,61 @@
+<%
+# Populating hash
+H = dict()
+H.setdefault('')
+for section in config.sections():
+    for option in config.options(section):
+        H[(section,option)] = config.get(section,option)
+def f(a, b):
+    global H
+    if (a,b) in H:
+        return H[(a,b)]
+    else:
+        return ''
+
+if f('root', 'projects') != '':
+    projects = f('root','projects').split(',')
+else:
+    projects = []
+
+if f('root', 'web-url') == '':
+    H[('root','web-url')] = web_url
+
+%>
+<html>
+  <head>
+	<title>Administration Zone</title>
+	<link rel="stylesheet" href="<%= web_url %>web/css/admin-style.css" type="text/css">
+	<script language="javascript" src="<%= web_url %>web/js/scripts.js"></script>
+  </head>
+  <body>
+	<form name="form1" action="<%= web_url %>index.py/newconfig" method="post">
+	  <div class="root">
+		<b>Main configuration section:</b>
+		<table>
+		  <tr><td>Password</td><td><input type="text" name="root/passwd" value="<%= f('root','passwd') %>"/></td></tr>
+		  <tr><td>Projects (comma separated)</td><td><input type="text" name="root/projects" value="<%= f('root','projects') %>"/></td></tr>
+		  <tr><td>Web URL:</td><td><input type="text" name="root/web-url" value="<%= f('root', 'web-url') %>"/></td></tr>
+        </table>
+		<hr/>
+	  </div><%
+for p in projects:
+       # Regular project fields
+%>
+		<div class="<%= p %>">
+          Project: <b><i><%= p %></i></b>
+		  <table>
+			<tr><td>Sources directory:</td><td><input type="text" name="<%= p %>/src-dir" value="<%= f(p,'src-dir') %>"/></td></tr>
+			<tr><td>Main DB file:</td><td><input type="text" name="<%= p %>/db-file" value="<%= f(p, 'db-file') %>"/></td></tr>
+			<tr><td>Xapian DB directory:</td><td><input type="text" name="<%= p %>/xapian-dir" value="<%= f(p, 'xapian-dir') %>"/></td></tr>
+			<tr><td>Language:</td><td><input type="text" name="<%= p %>/language" value="<%= f(p, 'language') %>" /></td></tr>
+		  </table>
+		  <hr/>
+		</div>
+<%
+%>
+		<input type="button" value="Store" onClick="AJAXConfigStore('<%= f('root','web-url') %>index.py/newconfig')"/>
+		<input type="button" value="Back to projects" onClick="window.location='<%= f('root','web-url') %>index.py'" />
+	</form>
+	<div id="AJAXMSG"></div>
+  </body>
+</html>

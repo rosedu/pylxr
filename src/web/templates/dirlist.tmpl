@@ -1,0 +1,57 @@
+<html>
+  <head>
+	<title>Directory listing for <%= dirpath %></title>
+	<link rel="stylesheet" href="web/css/dirlist-style.css" type="text/css">
+	<link rel="stylesheet" href="web/css/menu-style.css" type="text/css">
+	<script language="javascript" src="web/js/scripts.js"></script>
+  </head>
+  <body>
+<%@ include file="menu.tmpl" %>
+	<p>Back to <a href="index.py">project selection page</a>?</p>
+	<table>
+	  <tr><th>File</th><th>Size</th><th>Date</th></tr><%
+i = 0
+for h in listing:
+	i = i+1
+	if i % 2 == 1:
+		lineC = "even"
+	else:
+		lineC = "odd"
+	type = h['type']
+	if type == 'dir' or type == 'reg':
+		directive = type[0]
+		link = h['link']
+		display = h['display']
+		if type=='reg':
+			size = h['size']
+			date = h['date']
+		else:
+			size = ''
+			date = ''
+	%><tr class="<%= lineC %>"><td><a href="?proj=<%= proj %>&<%= directive %>=<%= link %>"><%= display %></a></td><td><%= size %></td><td><%= date %></td></tr>
+<%
+	else:
+		display = h['display']
+	%><tr class="<%= lineC %>"><td><%= display %></td><td></td><td></td></td>
+<%
+%>
+	</table><%
+if DEBUG is not None:
+	# Persist	
+%>
+	<span id="debug"><p>Debug messages:</p>
+		<p>
+			<ul>
+<%
+	for d in DEBUG:
+		# Persist
+		%>
+				<li><%= d %></li>
+<%
+		%>
+			</ul>
+		</p>
+	</span><%
+%>
+  </body>
+</html>
