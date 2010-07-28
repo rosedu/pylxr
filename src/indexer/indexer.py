@@ -16,7 +16,10 @@ def usage():
 	''' print usage'''
 
 	print 'Usage:'
-	print '\tpython %s [-c <conf.ini>]' % __file__
+	print '\tpython %s [-c conf.ini] [-p project]' % __file__
+	print 'Options:'
+	print '\t-c: specify config file (default is ../pylxr.ini)'
+	print '\t-p: specify single project to index'
 
 
 def tagDB(cursor, tagFile, lang):
@@ -229,7 +232,7 @@ def loadLang():
 		toks = line.split()
 		langmap[toks[0]] = [ext for ext in toks[1:]]	
 	
-def main(conf):
+def main(conf, p):
 	
 	parser = ConfigParser.ConfigParser()
 	try:
@@ -248,38 +251,66 @@ def main(conf):
 	extmap = dict([(v,k) for k in langmap for v in langmap[k]])
 
 	# parsing ini file
-	projects = parser.get('root', 'projects').split(',')
-	for proj in projects:
+	if p == None:
+		# all projects
+		projects = parser.get('root', 'projects').split(',')
+		for proj in projects:
+			print 'Started indexing project %s' % proj
+			try:
+				srcpath = parser.get(proj, 'src-dir')
+				dbpath = parser.get(proj, 'db-file')
+				xpath = parser.get(proj, 'xapian-dir')
+				lang = parser.get(proj, 'language').split()
+			except ConfigParser.NoOptionError, msg:
+				print msg
+				print 'Skipping project %s\n' % proj
+				continue
+			indexAll(srcpath, dbpath, xpath, lang)
+			print 'Finished indexing project %s\n' % proj
+	else:
+		# single project
+		proj = p
 		print 'Started indexing project %s' % proj
 		try:
 			srcpath = parser.get(proj, 'src-dir')
 			dbpath = parser.get(proj, 'db-file')
+			try:
+				os.remove(dbpath)
+			except:
+				pass
 			xpath = parser.get(proj, 'xapian-dir')
 			lang = parser.get(proj, 'language').split()
 		except ConfigParser.NoOptionError, msg:
 			print msg
-			print 'Skipping project %s\n' % proj
-			continue
+			return 1
 		indexAll(srcpath, dbpath, xpath, lang)
 		print 'Finished indexing project %s\n' % proj
-		
 	
 if __name__ == '__main__':
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'c:')
+		opts, args = getopt.getopt(sys.argv[1:], 'c:p:')
 	except getopt.GetoptError, msg:
 		print msg
 		usage()
 		sys.exit()
+	conf = '../pylxr.ini'
+	p = None
 	for o, a in opts:
 		if o == '-c':
 			if len(args) != 0:
 				print 'Too many arguments'
 				usage()
 				sys.exit(1)
-			sys.exit(main(a))
+			conf = a
+		if o == '-p':
+			if len(args) != 0:
+				print 'Too many arguments'
+				usage()
+				sys.exit(1)
+			p = a
+	sys.exit(main(conf,p))
 	if len(sys.argv) == 1:
-		sys.exit(main('../pylxr.ini'))
+		sys.exit(main('../pylxr.ini',None))
 	print usage()
 	sys.exit(1)
 
