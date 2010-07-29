@@ -104,6 +104,8 @@ def search(req):
 		allTags = DBS.searchTag(search, '', allMatches=True)
 		if allTags is not None:
 			allTags.sort(key = lambda (a,b,c): (c,a,b))
+
+		matchingFiles = DBS.searchFile('%'+search+'%')
 			
 		# allMatches = xapian.search(xafile, search)
 		params = urllib.urlencode({'config':xafile, 'search':search})
@@ -120,8 +122,9 @@ def search(req):
 				'allTags':allTags,
 				'allMatches':allMatches,
 				'search':search,
-				'web_url':web_url}
-			  )
+				'web_url':web_url,
+				'allFiles':matchingFiles
+				})
 	except Exception, ex:
 		return str(ex)
 		index(req)

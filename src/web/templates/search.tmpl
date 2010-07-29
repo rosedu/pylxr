@@ -12,6 +12,18 @@ if allTags is not None:
 	  </table>
 	</div>
 	<hr />
+	<div class="files">
+	  <table>
+		<tr><th>File name</th></tr>
+<%
+if allFiles is not None:
+   for (f,s,d,t) in allFiles:
+      if t=='reg':
+      %><tr><td><a href="<%= web_url %>/index.py?proj=<%= proj %>&r=/<% f %>"><%= f %></a></tr></tr>
+<%
+%>
+	</div>
+	<hr />
 	<div class="xapian">
 	  Xapian search (limited at 100 hits):
 	  <table>
