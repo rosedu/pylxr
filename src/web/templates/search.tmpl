@@ -1,6 +1,11 @@
-<!--	<p>Navigate back to <a href="<%= web_url %>/index.py?proj=<%= proj %>&d=">root</a>.</p> -->
-	<div class="tags">
-	  CTags search:
+<html>
+  <head>
+	<script language="javascript" src="web/js/scripts.js"></script>
+	<link rel="stylesheet" href="web/css/search-style.css" type="text/css" />
+  </head>
+  <body>
+	<a class="searchA" onClick='toggleCollapse("tagsS")' title="Click to toggle hide">CTags search</a>:
+	<div id="tagsS">
 	  <table>
 		<tr><th>File</th><th>Line</th><th>Type</th></tr>
 <%
@@ -12,20 +17,23 @@ if allTags is not None:
 	  </table>
 	</div>
 	<hr />
-	<div class="files">
+	<a class="searchA" onClick='toggleCollapse("filesS")' title="Click to toggle hide">Filename search</a>:
+	<div id="filesS">
 	  <table>
 		<tr><th>File name</th></tr>
 <%
 if allFiles is not None:
    for (f,s,d,t) in allFiles:
       if t=='reg':
-      %><tr><td><a href="<%= web_url %>/index.py?proj=<%= proj %>&r=/<% f %>"><%= f %></a></tr></tr>
-<%
+      %><tr><td><a href="<%= web_url %>/index.py?proj=<%= proj %>&r=<%= f %>"><%= f %></a></tr></tr><%
+
+
 %>
+		</table>
 	</div>
 	<hr />
-	<div class="xapian">
-	  Xapian search (limited at 100 hits):
+	<a class="searchA" onClick='toggleCollapse("xapianS")' title="Click to toggle hide">Xapian search</a> (limited at 100 hits):	
+	<div id="xapianS">
 	  <table>
 		<tr><th>File</th><th>Line</th></tr>
 <%
@@ -35,4 +43,5 @@ if allMatches is not None:
 <%
 %>
 	</div>
-
+</body>
+</html>

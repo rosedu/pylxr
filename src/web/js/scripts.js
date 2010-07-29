@@ -90,3 +90,11 @@ function AJAXConfigStore(weburl) {
 	AJAX.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	AJAX.send("data=" + data);
 }
+
+function toggleCollapse(idname) {
+	if ( document.getElementById(idname).style.display=='' ) {
+		document.getElementById(idname).style.display = 'none';
+	} else {
+		document.getElementById(idname).style.display = '';
+	}
+}
